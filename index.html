@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>josÚ — VJ · 3D · XR</title>
+<meta name="description" content="josÚ — ingeniero multimedia: VJ, modelado 3D, video, videojuegos y realidad mixta." />
+<meta property="og:title" content="josÚ" />
+<meta property="og:description" content="VJ · 3D · video · games · XR" />
+<meta name="theme-color" content="#000000" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Cpath d='M16 3v26M9 9l7 5 7-5M11 22l5-3 5 3' stroke='%23fff' stroke-width='2' fill='none'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;600&family=UnifrakturMaguntia&family=VT323&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="is-booting">
+
+<!-- ============ BOOT ============ -->
+<div id="boot" class="boot" role="status" aria-label="Loading">
+  <canvas id="bootMark" class="boot__mark" aria-hidden="true"></canvas>
+  <div class="boot__bar"><span id="bootFill"></span></div>
+  <div class="boot__pct" id="bootPct">000</div>
+</div>
+
+<div class="ctl">
+  <button class="ctl__b" id="langToggle" aria-label="Cambiar idioma / Switch language">es / en</button>
+  <button class="ctl__b" id="invertToggle" aria-pressed="false" data-i18n="invert">invertir</button>
+</div>
+
+<!-- títere de "Encajonado": fijo en la esquina, acompaña el scroll -->
+<div class="titere"><canvas id="titereCanvas" aria-label="Títere de Encajonado — tócalo para que salude"></canvas></div>
+
+<main>
+
+<!-- ============ 01 · HERO ============ -->
+<section class="sec hero" id="hero">
+  <div class="sigil sigil--a" data-sigil="7" aria-hidden="true"></div>
+  <div class="sigil sigil--b" data-sigil="23" aria-hidden="true"></div>
+  <svg class="sword" viewBox="0 0 60 400" aria-hidden="true">
+    <path d="M30 4 L37 30 L37 300 L30 318 L23 300 L23 30 Z" />
+    <path d="M30 30 L30 296" class="sword__fuller" />
+    <path d="M2 300 Q30 292 58 300 Q30 310 2 300 Z" />
+    <rect x="26" y="306" width="8" height="62" rx="2" />
+    <circle cx="30" cy="378" r="9" />
+  </svg>
+  <h1 class="hero__name" data-rise>josÚ</h1>
+  <p class="hero__tag mono" data-rise data-i18n="tag">ingeniero multimedia</p>
+  <ul class="hero__skills mono" data-rise>
+    <li>VJ</li><li>3D / Blender</li><li data-i18n="skVideo">video</li><li data-i18n="skGames">videojuegos</li><li data-i18n="skXR">realidad mixta</li>
+  </ul>
+  <a class="cue" href="#work" aria-label="Scroll"><i></i></a>
+</section>
+
+<!-- ============ 02 · WORK (PSP) ============ -->
+<section class="sec machine" id="work">
+  <div class="sigil sigil--c" data-sigil="41" aria-hidden="true"></div>
+  <h2 class="sec__label mono" data-i18n="work">/ proyectos</h2>
+  <div class="machine__stage">
+    <canvas id="pspCanvas"></canvas>
+    <div class="machine__loading" id="pspLoading"><i class="spin" aria-hidden="true"></i></div>
+  </div>
+  <div class="rail" aria-live="polite">
+    <b id="railIdx">01</b><i id="railTot">/06</i>
+    <span class="rail__cat mono" id="railCat"></span>
+    <span class="rail__title" id="railTitle"></span>
+  </div>
+  <div class="keys">
+    <button class="key" data-btn="left" aria-label="Izquierda">←</button>
+    <button class="key" data-btn="up" aria-label="Arriba">↑</button>
+    <button class="key" data-btn="down" aria-label="Abajo">↓</button>
+    <button class="key" data-btn="right" aria-label="Derecha">→</button>
+    <button class="key key--x" data-btn="cross" aria-label="Aceptar">✕</button>
+    <button class="key key--o" data-btn="circle" aria-label="Volver">○</button>
+  </div>
+  <p class="machine__hint mono" data-i18n="hint">arrastra para girar · toca los botones de la PSP</p>
+</section>
+
+<!-- ============ 03 · ABOUT ============ -->
+<section class="sec about" id="about">
+  <div class="sigil sigil--d" data-sigil="88" aria-hidden="true"></div>
+  <h2 class="about__h" data-i18n="aboutH">sobre mí</h2>
+  <div class="about__bio">
+    <p data-i18n="bio1">Soy josÚ, ingeniero en multimedia. Me muevo entre la visual en vivo y lo interactivo: hago de VJ, modelo en Blender, edito video, programo videojuegos y construyo experiencias de realidad mixta.</p>
+    <p data-i18n="bio2">Me interesa la estética oscura, los símbolos y la tecnología que se siente física: pantallas, luz, ruido y movimiento.</p>
+  </div>
+</section>
+
+<!-- ============ 04 · CONTACT ============ -->
+<section class="sec contact" id="contact">
+  <h2 class="contact__h"><span data-i18n="contactH">contacto</span><em>.</em></h2>
+  <ul class="contact__links mono">
+    <li><a href="https://www.instagram.com/badfacejosu/" target="_blank" rel="noopener">instagram / @badfacejosu ↗</a></li>
+    <li><a href="#" data-todo="linkedin" target="_blank" rel="noopener">linkedin ↗</a></li>
+    <li><a href="#" data-todo="email">email ↗</a></li>
+  </ul>
+  <footer class="credits mono">
+    <span>© <span id="year"></span> josÚ</span>
+    <span><span data-i18n="credit">modelo 3D PSP</span>: <a href="https://sketchfab.com/3d-models/sony-psp-dca89d10ec304d0cab76837750df7761" target="_blank" rel="noopener">Ilya Ostrovsky</a> — <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></span>
+  </footer>
+</section>
+
+</main>
+
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"
+} }
+</script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
