@@ -2,6 +2,9 @@
   --bg: #000;
   --fg: #f2f2f2;
   --dim: rgba(242, 242, 242, .55);
+  --red: #e3122d;
+  --red-soft: rgba(227, 18, 45, .7);
+  --red-faint: rgba(227, 18, 45, .18);
   --f-mono: 'Space Mono', ui-monospace, monospace;
   --f-title: 'Grenze Gotisch', serif;
   --f-sans: 'Space Grotesk', system-ui, sans-serif;
@@ -17,6 +20,8 @@ body.is-invert { filter: invert(1); }
 a { color: inherit; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 .mono { font-family: var(--f-mono); letter-spacing: .04em; }
+::selection { background: var(--red); color: #fff; }
+:focus-visible { outline: 1px solid var(--red-soft); outline-offset: 3px; }
 
 /* ruido de fondo muy sutil */
 body::before {
@@ -44,7 +49,7 @@ body::before {
 .ctl { position: fixed; right: 18px; bottom: 16px; z-index: 40; display: flex; gap: 14px; }
 .ctl__b { font-family: var(--f-mono); font-size: .78rem; letter-spacing: .08em; color: var(--dim); mix-blend-mode: difference; }
 .ctl__b:hover, .ctl__b b { color: var(--fg); font-weight: 400; }
-.ctl__b b { text-decoration: underline; text-underline-offset: 3px; }
+.ctl__b b { text-decoration: underline; text-decoration-color: var(--red); text-underline-offset: 3px; }
 
 /* ---------- secciones ---------- */
 .sec { position: relative; min-height: 100svh; overflow: hidden; }
@@ -59,7 +64,8 @@ body::before {
 .sigil svg { width: 100%; height: 100%; fill: var(--fg); filter: drop-shadow(0 0 6px rgba(255, 255, 255, .25)); }
 @keyframes drift { to { transform: rotate(360deg); } }
 .sigil--a { width: min(46vw, 520px); aspect-ratio: 1; left: -9vw; top: 6vh; animation-duration: 70s; opacity: .55; }
-.sigil--b { width: min(30vw, 340px); aspect-ratio: 1; right: -4vw; bottom: 4vh; animation-direction: reverse; animation-duration: 55s; opacity: .7; }
+.sigil--b { width: min(30vw, 340px); aspect-ratio: 1; right: -4vw; bottom: 4vh; animation-direction: reverse; animation-duration: 55s; opacity: .55; }
+.sigil--b svg { fill: var(--red); filter: drop-shadow(0 0 8px rgba(227, 18, 45, .35)); }
 .sigil--c { width: min(70vw, 760px); aspect-ratio: 1; left: 50%; top: 50%; margin: calc(min(70vw, 760px) / -2) 0 0 calc(min(70vw, 760px) / -2); opacity: .12; animation-duration: 120s; }
 .sigil--d { width: min(40vw, 440px); aspect-ratio: 1; right: -8vw; top: 10vh; opacity: .35; animation-duration: 90s; }
 
@@ -73,16 +79,17 @@ body::before {
 }
 .hero__tag { margin-top: 2.2rem; font-size: clamp(.8rem, 1.4vw, 1.05rem); color: var(--dim); text-transform: uppercase; }
 .hero__skills { max-width: 90vw; list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem 1.4rem; margin-top: .8rem; font-size: clamp(.78rem, 1.3vw, 1rem); text-transform: uppercase; }
-.hero__skills li::before { content: '⟡ '; color: var(--dim); }
+.hero__skills li::before { content: '⟡ '; color: var(--red-soft); }
 .sword { position: absolute; left: 50%; top: 50%; height: min(92vh, 900px); transform: translate(-50%, -50%); fill: none; stroke: var(--fg); stroke-width: 1; opacity: .35; z-index: 0; }
 .sword .sword__fuller { stroke-dasharray: 2 5; }
 .cue { position: absolute; left: 50%; bottom: 4vh; width: 1px; height: 54px; background: linear-gradient(var(--fg), transparent); transform: translateX(-50%); }
-.cue i { position: absolute; left: -3px; top: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--fg); animation: cue 2.2s ease-in-out infinite; }
+.cue i { position: absolute; left: -3px; top: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: cue 2.2s ease-in-out infinite; }
 @keyframes cue { 0% { top: 0; opacity: 1; } 80% { top: 48px; opacity: 0; } 100% { top: 48px; opacity: 0; } }
 
 /* ---------- PSP ---------- */
 .machine { display: grid; grid-template-rows: auto 1fr auto; }
 .sec__label { position: absolute; left: 5vw; top: 6vh; font-size: 1rem; color: var(--dim); z-index: 3; }
+.sec__label::first-letter { color: var(--red); }
 .machine__stage { position: absolute; inset: 0; z-index: 2; }
 .machine__stage canvas { width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
 .machine__stage canvas:active { cursor: grabbing; }
@@ -96,7 +103,7 @@ body::before {
 .rail__title { grid-column: 1 / -1; font-size: clamp(1.1rem, 2vw, 1.6rem); font-weight: 600; }
 .keys { position: absolute; right: calc(5vw + 110px); bottom: 7vh; z-index: 3; display: flex; gap: 8px; }
 .key { width: 44px; height: 44px; border: 1px solid rgba(255, 255, 255, .35); border-radius: 50%; font-size: 1.1rem; transition: background .2s, color .2s; }
-.key:hover { background: var(--fg); color: var(--bg); }
+.key:hover { background: var(--red); border-color: var(--red); color: #fff; }
 .machine__hint { position: absolute; left: 50%; bottom: 2.5vh; transform: translateX(-50%); z-index: 3; color: var(--dim); font-size: .78rem; white-space: nowrap; }
 
 /* ---------- about ---------- */
@@ -107,10 +114,10 @@ body::before {
 /* ---------- contacto ---------- */
 .contact { display: grid; align-content: center; justify-items: center; gap: 2.5rem; padding: 14vh 6vw 20vh; text-align: center; }
 .contact__h { font-family: var(--f-title); font-weight: 900; font-size: clamp(4.5rem, 17vw, 15rem); line-height: .85; }
-.contact__h em { font-style: normal; color: var(--dim); }
+.contact__h em { font-style: normal; color: var(--red); }
 .contact__links { list-style: none; display: grid; gap: .6rem; font-size: clamp(.95rem, 1.8vw, 1.3rem); transition-delay: .15s; }
 .contact__links a { text-decoration: none; border-bottom: 1px solid transparent; }
-.contact__links a:hover { border-color: currentColor; }
+.contact__links a:hover { border-color: var(--red); }
 .credits { position: absolute; left: 0; right: 0; bottom: 3vh; display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem 2rem; padding: 0 5vw; color: var(--dim); font-size: .72rem; }
 
 @media (max-width: 700px) {
@@ -123,3 +130,9 @@ body::before {
   .sigil, .cue i { animation: none; }
   html { scroll-behavior: auto; }
 }
+
+/* ---------- acentos rojos (sutiles) ---------- */
+.rail b { color: var(--fg); }
+.rail__cat { color: var(--red-soft); }
+.about__h::after { content: ''; display: block; width: 3.5rem; height: 2px; background: var(--red); margin-top: 1.2rem; }
+.credits a { text-decoration-color: var(--red-soft); }
