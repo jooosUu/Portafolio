@@ -3,6 +3,7 @@ import { setLang, getLang, onLang } from './i18n.js';
 import { sigilSVG } from './sigil.js';
 import { initPSP } from './psp.js';
 import { initTitere } from './titere.js';
+import { PROJECTS } from './data.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -39,7 +40,7 @@ function tickBoot() {
 }
 document.fonts.load('26px Anton').finally(drawBootMark);
 requestAnimationFrame(tickBoot);
-const markReady = () => { if (ready) return; ready = true; setTimeout(finishBoot, 1500); };   // respaldo si rAF va lento
+const markReady = () => { if (ready) return; ready = true; setTimeout(finishBoot, 1500); setTimeout(openFromHash, 1900); };   // respaldo si rAF va lento
 setTimeout(markReady, 12000);   // por si el modelo no carga, no bloquear el sitio
 
 /* ---------- idioma e invertir ---------- */
@@ -98,3 +99,12 @@ addEventListener('keydown', (e) => {
   e.preventDefault();
   psp.press(b);
 });
+
+/* ---------- links directos a un proyecto: .../Portafolio/#museo abre la PSP en ese proyecto ---------- */
+function openFromHash() {
+  const k = PROJECTS.findIndex((p) => '#' + p.id === location.hash);
+  if (k < 0) return;
+  $('#work').scrollIntoView({ behavior: 'smooth' });
+  psp.open(k);
+}
+addEventListener('hashchange', openFromHash);
