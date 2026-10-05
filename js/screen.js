@@ -88,7 +88,7 @@ export class ScreenUI {
     const lang = getLang();
     if (this.mode === 'gallery') {
       const p = PROJECTS[this.gal.p];
-      return { idx: this.gal.i + 1, tot: p.images.length || 1, label: CATS[p.cat][lang], title: L(p.title), glow: CATS[p.cat].glow };
+      return { idx: this.gal.i + 1, tot: p.images.length || 1, label: CATS[p.cat][lang], title: L(p.title), glow: CATS[p.cat].glow, proj: this.gal.p };
     }
     const c = XMB[this.col];
     const r = this.rows(c.id)[this.rowSel[this.col]];
