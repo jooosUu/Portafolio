@@ -9,6 +9,7 @@ export const CATS = {
   video: { es: 'video',          en: 'video',         c1: '#0b0b0b', c2: '#3a3a3a', glow: '#e8e8e8' },
   games: { es: 'videojuegos',    en: 'games',         c1: '#03140a', c2: '#0f4a2a', glow: '#5dff9e' },
   web:   { es: 'app web',        en: 'web app',       c1: '#140c02', c2: '#5a3a0c', glow: '#ffc25d' },
+  locked:{ es: 'en desarrollo',  en: 'in progress',   c1: '#050505', c2: '#2a070d', glow: '#e3122d' },
 };
 
 const imgs = (id, n) => Array.from({ length: n }, (_, i) => `assets/works/${id}/${String(i + 1).padStart(2, '0')}.jpg`);
@@ -29,17 +30,17 @@ export const PROJECTS = [
              en: 'VR café (Unity + Cardboard): brew coffee and serve orders to tables. Scenes generated in code.' },
   },
   {
-    id: 'armonico', cat: 'web', year: '2026', seed: 52, link: null,
-    images: imgs('armonico', 1),
-    title: { es: 'Armónico Karaoke', en: 'Armónico Karaoke' },
-    desc:  { es: 'App de gestión para un karaoke: ventas, caja, inventario, personal y préstamos (Next.js + Supabase).',
-             en: 'Management app for a karaoke bar: sales, cash, inventory, staff and loans (Next.js + Supabase).' },
+    // proyecto en curso: no se muestra qué es hasta que esté listo
+    id: 'pronto', cat: 'locked', year: '2026', seed: 52, link: null, locked: true,
+    images: [],
+    title: { es: 'Proyecto bloqueado', en: 'Locked project' },
+    desc:  { es: 'Estoy trabajando en esto. Se desbloquea pronto.', en: "I'm working on it. Unlocks soon." },
   },
 ];
 
 export const LINKS = {
   instagram: 'https://www.instagram.com/badfacejosu/',
-  linkedin: null,   // pendiente
+  linkedin: 'https://www.linkedin.com/in/jose-ochoa-b12351135/',
 };
 
 /* Columnas del menú tipo XMB. icon = nombre de ícono dibujado en screen.js */
