@@ -82,7 +82,7 @@ const psp = initPSP({
     else if (type === 'invert') toggleInvert();
   },
 });
-onLang(() => paintRail(psp.info()));
+onLang(() => { paintRail(psp.info()); psp.relabel(); });
 
 document.querySelectorAll('[data-btn]').forEach((b) => b.addEventListener('click', () => psp.press(b.dataset.btn)));
 const KEYMAP = {
