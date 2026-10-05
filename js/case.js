@@ -16,7 +16,9 @@ const el = $('#case');
 function render() {
   if (current < 0) return;
   const p = PROJECTS[current], c = CATS[p.cat], lang = getLang(), t = T[lang];
-  const imgs = p.images.map((src, i) => `<button class="case__shot" data-i="${i}"><img src="${src}" alt="${p.title[lang]} — ${i + 1}" loading="lazy" /></button>`).join('');
+  const imgs = p.images.map((src, i) => (/\.mp4$/i.test(src)
+    ? `<button class="case__shot is-video" data-i="${i}"><video src="${src}" muted loop playsinline autoplay preload="metadata"></video></button>`
+    : `<button class="case__shot" data-i="${i}"><img src="${src}" alt="${p.title[lang]} — ${i + 1}" loading="lazy" /></button>`)).join('');
   el.innerHTML = `
     <div class="case__inner">
       <button class="case__close mono" aria-label="${t.close}">✕ ${t.close}</button>
@@ -34,7 +36,7 @@ function render() {
       </div>
       ${imgs ? `<h3 class="case__h mono">${t.gallery}</h3><div class="case__grid">${imgs}</div>` : ''}`}
     </div>
-    <div class="case__zoom" hidden><img alt="" /></div>`;
+    <div class="case__zoom" hidden></div>`;
 }
 
 export function openCase(k, { push = true } = {}) {
@@ -61,14 +63,18 @@ el.addEventListener('click', (e) => {
   const zoom = $('.case__zoom', el);
   if (e.target.closest('.case__close')) return closeCase();
   const shot = e.target.closest('.case__shot');
-  if (shot) { zoom.querySelector('img').src = shot.querySelector('img').src; zoom.hidden = false; return; }
-  if (e.target.closest('.case__zoom')) { zoom.hidden = true; return; }
+  if (shot) {
+    const v = shot.querySelector('video');
+    zoom.innerHTML = v ? `<video src="${v.src}" controls autoplay loop playsinline></video>` : `<img src="${shot.querySelector('img').src}" alt="" />`;
+    zoom.hidden = false; return;
+  }
+  if (e.target.closest('.case__zoom') && e.target.tagName !== 'VIDEO') { zoom.hidden = true; zoom.innerHTML = ''; return; }
   if (e.target === el) closeCase();             // clic fuera del contenido
 });
 addEventListener('keydown', (e) => {
   if (e.key !== 'Escape' || current < 0) return;
   const zoom = $('.case__zoom', el);
-  if (zoom && !zoom.hidden) zoom.hidden = true; else closeCase();
+  if (zoom && !zoom.hidden) { zoom.hidden = true; zoom.innerHTML = ''; } else closeCase();
 });
 onLang(render);
 export const isCaseOpen = () => current >= 0;
