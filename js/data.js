@@ -37,7 +37,7 @@ export const PROJECTS = [
   },
   {
     id: 'desconexion', cat: 'vj', year: '2026', seed: 61, link: 'https://www.instagram.com/p/DbhNtfcKNMf/',
-    images: ['01.jpg', '02.jpg', '03.mp4', '04.mp4', '05.mp4'].map((f) => `assets/works/desconexion/${f}`),
+    images: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.mp4'].map((f) => `assets/works/desconexion/${f}`),
     tools: ['TouchDesigner', 'Video mapping', 'Proyección', 'Visuales en vivo'],
     title: { es: 'Desconexión', en: 'Desconexión' },
     desc:  { es: 'Visuales en vivo para Desconexión: proyecciones sobre el techo y los muros de un espacio íntimo de velas y cojines, generadas y mezcladas en tiempo real en TouchDesigner.',
@@ -54,8 +54,12 @@ export const PROJECTS = [
     },
   },
   {
-    id: 'tunhouse', cat: 'vj', year: '2026', seed: 77, link: null,
-    images: [],
+    id: 'tunhouse', cat: 'vj', year: '2026', seed: 77, link: 'https://www.instagram.com/p/DYYJrbeqpoL/',
+    links: [
+      { es: 'post del evento', en: 'event post', url: 'https://www.instagram.com/p/DXXtWagCsoK/' },
+      { es: 'post de agradecimiento', en: 'thank-you post', url: 'https://www.instagram.com/p/DYYJrbeqpoL/' },
+    ],
+    images: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.jpg', '08.mp4', '09.mp4', '10.mp4'].map((f) => `assets/works/tunhouse/${f}`),
     tools: ['TouchDesigner', 'Kinect', 'Audio reactivo', 'Visuales en vivo'],
     title: { es: 'Aniversario Tunhouse', en: 'Tunhouse Anniversary' },
     desc:  { es: 'Visuales para la fiesta de aniversario de Tunhouse: reaccionan al audio y al movimiento de la gente con un Kinect, todo en tiempo real en TouchDesigner.',

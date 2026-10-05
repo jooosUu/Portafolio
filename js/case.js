@@ -6,12 +6,18 @@ import { sigilSVG } from './sigil.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const T = {
-  es: { tools: 'herramientas', what: 'qué hace', gallery: 'galería', repo: 'ver en GitHub', close: 'cerrar', locked: 'Este proyecto está en desarrollo. Pronto se desbloquea.' },
-  en: { tools: 'tools', what: 'what it does', gallery: 'gallery', repo: 'view on GitHub', close: 'close', locked: 'This project is in progress. Unlocks soon.' },
+  es: { tools: 'herramientas', what: 'qué hace', gallery: 'galería', repo: 'ver en GitHub', ig: 'ver en Instagram', site: 'ver más', close: 'cerrar', locked: 'Este proyecto está en desarrollo. Pronto se desbloquea.' },
+  en: { tools: 'tools', what: 'what it does', gallery: 'gallery', repo: 'view on GitHub', ig: 'view on Instagram', site: 'more', close: 'close', locked: 'This project is in progress. Unlocks soon.' },
 };
 
 let current = -1;
 const el = $('#case');
+
+// botones de links: varios (p.links) o uno solo (p.link) con el texto según el sitio
+function links(p, lang, t) {
+  const list = p.links ? p.links.map((l) => [l[lang], l.url]) : p.link ? [[/instagram\.com/.test(p.link) ? t.ig : /github\.com/.test(p.link) ? t.repo : t.site, p.link]] : [];
+  return list.map(([label, url]) => `<a class="case__link mono" href="${url}" target="_blank" rel="noopener">${label} ↗</a>`).join('');
+}
 
 function render() {
   if (current < 0) return;
@@ -27,7 +33,7 @@ function render() {
         <p class="case__meta mono">${p.locked ? '🔒 ' : ''}${c[lang]} · ${p.year}</p>
         <h2 class="case__title">${p.title[lang]}</h2>
         <p class="case__lead">${p.locked ? t.locked : p.desc[lang]}</p>
-        ${p.link ? `<a class="case__link mono" href="${p.link}" target="_blank" rel="noopener">${t.repo} ↗</a>` : ''}
+        <div class="case__links">${links(p, lang, t)}</div>
       </header>
       ${p.locked ? '' : `
       <div class="case__cols">
