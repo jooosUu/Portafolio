@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Hoja de vida — Juan José Plazas Ochoa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=UnifrakturMaguntia&display=swap" rel="stylesheet" />
+<style>
+  /* Hoja de vida diagramada — misma identidad del portafolio: negro, blanco y rojo */
+  @page { size: A4; margin: 0; }
+  :root {
+    --red: #e3122d;
+    --red-dim: rgba(227, 18, 45, .55);
+    --ink: #f2f2f2;
+    --dim: #a9a9a9;
+    --side: #000;
+    --main: #0d0d0d;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+    --cond: 'Grenze Gotisch', serif;
+    --goth: 'UnifrakturMaguntia', serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #222; }
+  body { font-family: var(--sans); color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  a { color: inherit; text-decoration: none; }
+
+  .page {
+    width: 210mm; height: 297mm; margin: 0 auto; position: relative; overflow: hidden;
+    display: grid; grid-template-columns: 68mm 1fr; background: var(--main);
+  }
+
+  /* ---------- barra lateral ---------- */
+  .side { background: var(--side); padding: 9mm 7mm 8mm; position: relative; display: flex; flex-direction: column; gap: 4.6mm; border-right: 1.2px solid var(--red); }
+  .photo {
+    width: 100%; aspect-ratio: 1 / 1; position: relative; background: #141414;
+    clip-path: polygon(0 0, 88% 0, 100% 9%, 100% 100%, 12% 100%, 0 91%);
+  }
+  .photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; filter: grayscale(1); display: block; }
+  .photo img ~ .ph { display: none; }   /* el texto [ foto ] solo se ve si no hay foto */
+  .photo .ph { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--mono); color: var(--dim); font-size: 10pt; letter-spacing: .1em; }
+  .frame-tag { font-family: var(--mono); color: var(--red); font-size: 7.5pt; letter-spacing: .12em; margin-top: -4.5mm; display: flex; justify-content: space-between; }
+
+  .s-h { font-family: var(--mono); font-weight: 700; font-size: 8.4pt; letter-spacing: .14em; color: var(--red); text-transform: uppercase; margin-bottom: 1.6mm; display: flex; align-items: center; gap: 2mm; }
+  .s-h::after { content: ''; flex: 1; height: 1px; background: var(--red-dim); }
+  .contact { list-style: none; display: grid; gap: 1.7mm; font-size: 8.4pt; }
+  .contact li { display: grid; grid-template-columns: 4.2mm 1fr; align-items: start; word-break: break-word; }
+  .contact li::before { content: '+'; color: var(--red); font-weight: 700; }
+  .contact b { display: block; font-family: var(--mono); font-weight: 400; color: var(--dim); font-size: 6.6pt; letter-spacing: .1em; text-transform: uppercase; line-height: 1.2; }
+
+  .skills { display: grid; gap: 2mm; font-size: 8.2pt; line-height: 1.38; }
+  .skills h4 { font-weight: 600; font-size: 8.6pt; margin-bottom: .6mm; }
+  .chips { display: flex; flex-wrap: wrap; gap: 1.2mm; }
+  .chips span { border: 1px solid #3a3a3a; padding: .3mm 1.4mm; font-size: 7.4pt; }
+
+  .lang { display: grid; gap: 2mm; font-size: 8.4pt; }
+  .lang .bar { height: 1.6mm; background: #262626; margin-top: .8mm; }
+  .lang .bar i { display: block; height: 100%; background: var(--red); }
+
+  .cert { display: grid; gap: 2.2mm; font-size: 8.2pt; line-height: 1.35; }
+  .cert span { color: var(--dim); display: block; font-size: 7.8pt; }
+
+  .side .sig { position: absolute; left: -14mm; bottom: -12mm; width: 64mm; opacity: .16; fill: var(--red); pointer-events: none; }
+  .alias { margin-top: auto; font-family: var(--goth); font-size: 26pt; line-height: 1; color: var(--ink); }
+  .alias small { display: block; font-family: var(--mono); font-size: 6.8pt; color: var(--dim); letter-spacing: .1em; margin-top: 1mm; }
+
+  /* ---------- columna principal ---------- */
+  .main { padding: 10mm 11mm 8mm 10mm; position: relative; display: flex; flex-direction: column; gap: 4.2mm; }
+  .main .sig { position: absolute; right: -16mm; top: -10mm; width: 80mm; opacity: .07; fill: var(--ink); pointer-events: none; }
+  .name { font-family: var(--cond); font-weight: 900; line-height: .92; font-size: 38pt; }
+  .name em { font-style: normal; color: var(--red); }
+  .role { margin-top: 2.4mm; font-family: var(--mono); font-size: 9pt; letter-spacing: .04em; color: var(--dim); }
+  .role b { color: var(--red); font-weight: 400; }
+
+  .m-h { font-family: var(--cond); font-weight: 700; font-size: 17pt; letter-spacing: .01em; display: flex; align-items: baseline; gap: 2.5mm; margin-bottom: 2mm; }
+  .m-h small { font-family: var(--mono); font-size: 7.6pt; color: var(--red); letter-spacing: .08em; }
+  .m-h::after { content: ''; flex: 1; height: 1px; background: #2c2c2c; align-self: center; }
+  p, li { font-size: 8.5pt; line-height: 1.42; }
+  .profile p { color: #dedede; }
+
+  .timeline { position: relative; display: grid; gap: 2.8mm; padding-left: 5mm; }
+  .timeline::before { content: ''; position: absolute; left: 1.1mm; top: 1.4mm; bottom: 1mm; width: 1px; background: var(--red-dim); }
+  .job { position: relative; }
+  .job::before { content: ''; position: absolute; left: -5mm; top: 1.2mm; width: 2.3mm; height: 2.3mm; background: var(--red); transform: rotate(45deg); }
+  .job h3 { font-size: 9.6pt; font-weight: 700; }
+  .job .meta { display: flex; justify-content: space-between; gap: 3mm; font-size: 8.2pt; color: var(--dim); margin: .4mm 0 1mm; }
+  .job .meta i { font-style: normal; font-family: var(--mono); font-size: 7.4pt; color: var(--red); white-space: nowrap; }
+  .job ul { list-style: none; display: grid; gap: .8mm; }
+  .job li { padding-left: 3.2mm; position: relative; color: #dedede; }
+  .job li::before { content: '›'; position: absolute; left: 0; color: var(--red); font-weight: 700; }
+
+  .edu { display: grid; gap: 2mm; }
+  .edu div { display: grid; grid-template-columns: 1fr auto; gap: 3mm; font-size: 8.7pt; }
+  .edu b { font-weight: 600; }
+  .edu span { color: var(--dim); display: block; font-size: 8.2pt; }
+  .edu i { font-style: normal; font-family: var(--mono); font-size: 7.4pt; color: var(--red); white-space: nowrap; }
+
+  .projects { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+  .proj { border: 1px solid #2a2a2a; border-top: 2px solid var(--red); padding: 2.4mm 3mm; }
+  .proj h3 { font-size: 9pt; font-weight: 700; }
+  .proj span { display: block; font-family: var(--mono); color: var(--dim); font-size: 7pt; margin-bottom: .8mm; }
+  .proj p { font-size: 8.2pt; color: #d6d6d6; }
+
+  .foot { margin-top: auto; display: flex; justify-content: space-between; font-family: var(--mono); font-size: 7.4pt; color: var(--dim); letter-spacing: .08em; border-top: 1px solid #2a2a2a; padding-top: 2mm; }
+  .foot a { color: var(--red); }
+
+  @media screen { .page { margin: 10mm auto; box-shadow: 0 0 40px rgba(0,0,0,.6); } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ===== barra lateral ===== -->
+  <aside class="side">
+    <div class="photo">
+      <!-- poner la foto en docs/cv/foto.jpg -->
+      <img src="foto.jpg" alt="Juan José Plazas Ochoa" onerror="this.remove()" />
+      <div class="ph">[ foto ]</div>
+    </div>
+    <div class="frame-tag"><span>JJPO</span><span>// 2026</span></div>
+
+    <section>
+      <h2 class="s-h">contacto</h2>
+      <ul class="contact">
+        <li><span><b>ubicación</b>Tunja, Colombia</span></li>
+        <li><span><b>teléfono</b><a href="tel:+573124951007">312 495 1007</a></span></li>
+        <li><span><b>email</b><a href="mailto:juanjoploc@gmail.com">juanjoploc@gmail.com</a></span></li>
+        <li><span><b>linkedin</b><a href="https://www.linkedin.com/in/jose-ochoa-b12351135/">in/jose-ochoa-b12351135</a></span></li>
+        <li><span><b>github</b><a href="https://github.com/jooosUu">github.com/jooosUu</a></span></li>
+        <li><span><b>portafolio</b><a href="https://jooosuu.github.io/Portafolio/">jooosuu.github.io/Portafolio</a></span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="s-h">competencias</h2>
+      <div class="skills">
+        <div><h4>Software</h4><div class="chips"><span>Next.js (App Router)</span><span>React</span><span>Tailwind CSS</span><span>Supabase · PostgreSQL</span><span>APIs y webhooks</span><span>Módulos ERP</span><span>Automatización</span></div></div>
+        <div><h4>Diseño / Planta</h4><div class="chips"><span>AutoCAD</span><span>Planos y optimización de corte</span><span>Inventarios y logística</span></div></div>
+        <div><h4>Herramientas</h4><div class="chips"><span>Illustrator</span><span>Photoshop</span><span>Premiere</span><span>After Effects</span><span>Blender</span><span>MS Office</span></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="s-h">idiomas</h2>
+      <div class="lang">
+        <div>Español · Nativo<div class="bar"><i style="width:100%"></i></div></div>
+        <div>Inglés · B2 (intermedio-avanzado)<div class="bar"><i style="width:72%"></i></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="s-h">certificaciones</h2>
+      <div class="cert">
+        <div>Google AI Professional Certificate<span>Google / Coursera · 2026</span></div>
+        <div>Google Project Management<span>Google / Coursera · en curso</span></div>
+      </div>
+    </section>
+
+    <div class="alias">josÚ<small>ingeniero multimedia</small></div>
+    <div class="sig" data-sigil="23"></div>
+  </aside>
+
+  <!-- ===== columna principal ===== -->
+  <main class="main">
+    <div class="sig" data-sigil="88"></div>
+    <header>
+      <h1 class="name">Juan José<br/><em>Plazas Ochoa</em></h1>
+      <p class="role">Ingeniería en Multimedia <b>/</b> Desarrollador de Software</p>
+    </header>
+
+    <section class="profile">
+      <h2 class="m-h"><small>01</small>Perfil profesional</h2>
+      <p>Estudiante de Ingeniería en Multimedia con experiencia en desarrollo de software y operación en planta para procesos de manufactura. He participado en supervisión de producción, levantamiento de necesidades y digitalización operativa. A partir de esa experiencia desarrollé un ERP interno y una página web conectada al mismo sistema para centralizar inventarios, producción y finanzas.</p>
+    </section>
+
+    <section>
+      <h2 class="m-h"><small>02</small>Experiencia</h2>
+      <div class="timeline">
+        <article class="job">
+          <h3>Desarrollador de software y supervisor de planta</h3>
+          <div class="meta"><span>Todo Tejidos S.A.S. · Rionegro, Antioquia</span><i>dic 2025 — ene 2026</i></div>
+          <ul>
+            <li>Desarrollé e implementé un ERP interno ("Manager App") con Next.js (App Router), Supabase (PostgreSQL) y Tailwind para centralizar inventarios, producción y finanzas.</li>
+            <li>Desarrollé una página web conectada al ERP, reutilizando la misma base de datos para mantener productos e información operativa centralizados.</li>
+            <li>Supervisé procesos en planta e identifiqué necesidades operativas que dieron origen al ERP y a la página web; además, apoyé la actualización de planos en AutoCAD para corte y ensamble.</li>
+          </ul>
+        </article>
+        <article class="job">
+          <h3>Auxiliar de diseño y asistente de apoyo</h3>
+          <div class="meta"><span>Todo Tejidos S.A.S. · Rionegro, Antioquia</span><i>jun 2025 — jul 2025</i></div>
+          <ul>
+            <li>Elaboré planos estructurales y cortes de tela; apoyé compras y control básico de inventarios.</li>
+            <li>Apoyé levantamiento de necesidades en planta, mantenimiento básico y soporte a equipos de oficina.</li>
+          </ul>
+        </article>
+        <article class="job">
+          <h3>Auxiliar de cocina</h3>
+          <div class="meta"><span>Club Militar de Oficiales · Paipa, Boyacá</span><i>dic 2023 — ene 2024</i></div>
+          <ul>
+            <li>Apoyé inventario de insumos, orden y operación diaria del área, fortaleciendo disciplina, atención al detalle y trabajo bajo presión.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="m-h"><small>03</small>Educación</h2>
+      <div class="edu">
+        <div><span><b>Ingeniería en Multimedia</b><span>Universidad de Boyacá · Tunja, Colombia</span></span><i>2022 — actualidad</i></div>
+        <div><span><b>Bachiller Académico</b><span>Escuela Normal Superior Santiago de Tunja · Tunja, Colombia</span></span><i>2021</i></div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="m-h"><small>04</small>Proyectos destacados</h2>
+      <div class="projects">
+        <div class="proj"><h3>Gestor Operativo</h3><span>proyecto independiente · actualidad</span><p>Web app para gestión de tiempos y gastos, con enfoque en registro operativo y análisis de datos.</p></div>
+        <div class="proj"><h3>Plataforma de Mascotas</h3><span>proyecto independiente · en desarrollo</span><p>Aplicación web orientada a servicios para mascotas, con componentes de geolocalización y estructura modular.</p></div>
+      </div>
+    </section>
+
+    <footer class="foot"><a href="https://jooosuu.github.io/Portafolio/docs/tarifario-2026.pdf">tarifario 2026 ↗</a><a href="https://jooosuu.github.io/Portafolio/">jooosuu.github.io/Portafolio ↗</a></footer>
+  </main>
+</div>
+
+<script type="module">
+  import { sigilSVG } from '../../js/sigil.js';
+  document.querySelectorAll('[data-sigil]').forEach((el) => { el.innerHTML = sigilSVG(+el.dataset.sigil, 0.012); });
+</script>
+</body>
+</html>

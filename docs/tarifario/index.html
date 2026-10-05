@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Tarifario VJ 2026 — josÚ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=UnifrakturMaguntia&display=swap" rel="stylesheet" />
+<style>
+  /* Tarifario 2026 — mismo set visual que la hoja de vida: negro, blanco y rojo */
+  @page { size: A4; margin: 0; }
+  :root {
+    --red: #e3122d; --red-dim: rgba(227, 18, 45, .55);
+    --ink: #f2f2f2; --dim: #a9a9a9; --line: #2a2a2a;
+    --mono: 'Space Mono', monospace; --sans: 'Space Grotesk', sans-serif; --cond: 'Grenze Gotisch', serif; --goth: 'UnifrakturMaguntia', serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #222; }
+  body { font-family: var(--sans); color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  a { color: inherit; text-decoration: none; }
+  .page { width: 210mm; height: 297mm; margin: 0 auto; position: relative; overflow: hidden; background: #0d0d0d; padding: 13mm 16mm 0; display: flex; flex-direction: column; }
+  .page::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 4mm; background: var(--red); }
+  .sig { position: absolute; pointer-events: none; }
+  .sig svg { width: 100%; height: 100%; }
+  .sa { width: 118mm; height: 118mm; right: -42mm; top: -24mm; opacity: .1; fill: var(--ink); }
+  .sb { width: 80mm; height: 80mm; left: -34mm; bottom: 46mm; opacity: .14; fill: var(--red); }
+  .c { position: relative; z-index: 1; }
+
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 8mm; }
+  h1 { font-family: var(--goth); font-weight: 400; font-size: 58pt; line-height: .85; }
+  .tag { font-family: var(--mono); font-size: 10.5pt; letter-spacing: .08em; color: var(--dim); margin-top: 2.5mm; }
+  .tag b { color: var(--red); font-weight: 400; }
+  .who { text-align: right; font-family: var(--mono); font-size: 8.4pt; color: var(--dim); letter-spacing: .06em; line-height: 1.25; }
+  .who strong { display: block; font-family: var(--cond); font-weight: 900; font-size: 23pt; color: var(--ink); line-height: 1; margin-bottom: 1mm; }
+  .intro { margin-top: 4mm; max-width: 130mm; font-size: 10.5pt; line-height: 1.45; color: #dcdcdc; }
+  .intro a { color: var(--red); border-bottom: 1px solid var(--red-dim); }
+
+  h2 { font-family: var(--cond); font-weight: 700; font-size: 19pt; letter-spacing: .01em; margin: 6mm 0 1.5mm; display: flex; align-items: baseline; gap: 3mm; }
+  h2 small { font-family: var(--mono); font-size: 8.4pt; color: var(--red); letter-spacing: .08em; }
+  h2::after { content: ''; flex: 1; height: 1px; background: var(--line); align-self: center; }
+  .row { display: grid; grid-template-columns: 1fr 28mm 56mm; gap: 4mm; padding: 2.2mm 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+  .n { font-weight: 600; font-size: 11pt; }
+  .n small { display: block; font-weight: 400; font-size: 9pt; color: var(--dim); }
+  .d { font-family: var(--mono); font-size: 9pt; color: var(--dim); letter-spacing: .04em; }
+  .p { font-family: var(--mono); font-weight: 700; font-size: 11pt; text-align: right; white-space: nowrap; letter-spacing: .03em; }
+  .p.hl { color: var(--red); }
+  .note { margin-top: 2.5mm; font-size: 9.3pt; line-height: 1.45; color: var(--dim); max-width: 160mm; }
+  .note a { color: var(--red); }
+
+  ul { list-style: none; columns: 2; column-gap: 10mm; font-size: 10pt; }
+  li { padding: 1.3mm 0 1.3mm 4.5mm; position: relative; break-inside: avoid; }
+  li::before { content: ''; position: absolute; left: 0; top: 2.9mm; width: 1.8mm; height: 1.8mm; background: var(--red); transform: rotate(45deg); }
+
+  .cta { margin-top: 5mm; display: flex; align-items: center; justify-content: space-between; gap: 6mm; border: 1px solid var(--red); padding: 3.5mm 5mm; }
+  .cta p { font-size: 10.5pt; }
+  .cta p span { display: block; font-family: var(--mono); font-size: 8.4pt; color: var(--dim); }
+  .btn { background: var(--red); color: #fff; font-family: var(--sans); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: 9.5pt; padding: 2.4mm 5mm; white-space: nowrap; }
+
+  .foot { margin-top: auto; margin-left: -16mm; margin-right: -16mm; background: #000; border-top: 1.2px solid var(--red); padding: 4.5mm 16mm 5mm 20mm; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.4mm 6mm; position: relative; z-index: 1; }
+  .foot a { font-size: 9.2pt; display: block; }
+  .foot a b { display: block; font-family: var(--mono); font-weight: 700; color: var(--red); font-size: 7pt; text-transform: uppercase; letter-spacing: .08em; line-height: 1; }
+  @media screen { .page { margin: 10mm auto; box-shadow: 0 0 40px rgba(0,0,0,.6); } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="sig sa" data-sigil="7"></div>
+  <div class="sig sb" data-sigil="41"></div>
+
+  <div class="c">
+    <header>
+      <div>
+        <h1>josÚ</h1>
+        <p class="tag">VJ <b>/</b> tarifas 2026</p>
+      </div>
+      <p class="who"><strong>Juan José Plazas Ochoa</strong>ingeniero multimedia · Tunja</p>
+    </header>
+    <p class="intro">Visuales en vivo para fiestas, clubes y eventos. Mira trabajos anteriores en mi <a href="https://jooosuu.github.io/Portafolio/">portafolio</a>.</p>
+
+    <h2><small>01</small>En vivo</h2>
+    <div class="row"><div class="n">Set corto<small>librería visual, 1 salida</small></div><div class="d">1 – 2 h</div><div class="p">$120.000 – $180.000</div></div>
+    <div class="row"><div class="n">Noche<small>varios DJs o actos</small></div><div class="d">3 – 5 h</div><div class="p">$250.000 – $350.000</div></div>
+    <div class="row"><div class="n">Noche larga</div><div class="d">6 h o más</div><div class="p">$400.000</div></div>
+
+    <h2><small>02</small>Combos</h2>
+    <div class="row"><div class="n">Bar / club<small>visuales + logo del evento en pantalla</small></div><div class="d">hasta 4 h</div><div class="p">$250.000</div></div>
+    <div class="row"><div class="n">Evento completo<small>logo o flyer animado, ajuste con la pantalla del lugar</small></div><div class="d">hasta 6 h</div><div class="p">$350.000 – $400.000</div></div>
+
+    <h2><small>03</small>Interactivo · Kinect</h2>
+    <p class="note" style="margin:0 0 1mm;color:#dcdcdc">Visuales que reaccionan al movimiento de la gente o del artista: partículas, siluetas, mallas 3D.</p>
+    <div class="row"><div class="n">Sumado a una noche</div><div class="d">—</div><div class="p hl">+ $150.000 – $200.000</div></div>
+    <div class="row"><div class="n">Instalación sola</div><div class="d">3 – 5 h</div><div class="p hl">$450.000 – $550.000</div></div>
+    <p class="note">Cuesta más porque todo se genera en tiempo real (no son videos): lo programo antes en TouchDesigner y llego 1,5 – 2 h antes a montar y calibrar el sensor.</p>
+
+    <h2><small>04</small>Lo que necesito</h2>
+    <ul>
+      <li>Toma con polo a tierra en la cabina</li>
+      <li>Entrada HDMI al video beam o pantalla</li>
+      <li>Lugar seguro para el kinect, lejos de bebidas</li>
+      <li>Transporte de regreso al terminar</li>
+      <li>Alguna bebida</li>
+      <li>Hora extra: $40.000</li>
+    </ul>
+
+    <div class="cta">
+      <p>¿Tienes un evento?<span>escríbeme y armamos la cotización</span></p>
+      <a class="btn" href="https://wa.me/573124951007?text=Hola%20jos%C3%9A%2C%20quiero%20cotizar%20visuales%20para%20un%20evento">Cotizar por WhatsApp ↗</a>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <a href="https://wa.me/573124951007"><b>whatsapp</b>312 495 1007</a>
+    <a href="https://www.instagram.com/badfacejosu/"><b>instagram</b>@badfacejosu</a>
+    <a href="mailto:juanjoploc@gmail.com"><b>email</b>juanjoploc@gmail.com</a>
+    <a href="https://jooosuu.github.io/Portafolio/"><b>portafolio</b>jooosuu.github.io/Portafolio</a>
+    <a href="https://jooosuu.github.io/Portafolio/docs/hoja-de-vida-diagramada.pdf"><b>hoja de vida</b>ver PDF ↗</a>
+    <a href="https://www.linkedin.com/in/jose-ochoa-b12351135/"><b>linkedin</b>in/jose-ochoa-b12351135</a>
+  </footer>
+</div>
+<script type="module">
+  import { sigilSVG } from '../../js/sigil.js';
+  document.querySelectorAll('[data-sigil]').forEach((el) => { el.innerHTML = sigilSVG(+el.dataset.sigil, 0.012); });
+</script>
+</body>
+</html>
