@@ -37,8 +37,8 @@ export class ScreenUI {
   rows(colId) {
     const lang = getLang();
     switch (colId) {
-      case 'projects': return PROJECTS.map((p, k) => ({ title: L(p.title), sub: `${CATS[p.cat][lang]} · ${p.year}`, thumb: p.images[0], go: () => this.openGallery(k, false) }));
-      case 'photos':   return PROJECTS.map((p, k) => ({ title: L(p.title), sub: `${p.images.length} ${lang === 'es' ? 'fotos' : 'photos'}`, thumb: p.images[0], go: () => this.openGallery(k, true) }));
+      case 'projects': return PROJECTS.map((p, k) => ({ title: L(p.title), sub: p.locked ? `🔒 ${CATS[p.cat][lang]}` : `${CATS[p.cat][lang]} · ${p.year}`, thumb: p.images[0], go: () => this.openGallery(k, false) }));
+      case 'photos':   return PROJECTS.map((p, k) => ({ title: L(p.title), sub: p.locked ? '🔒' : `${p.images.length} ${lang === 'es' ? 'fotos' : 'photos'}`, thumb: p.images[0], go: () => this.openGallery(k, true) }));
       case 'videos':   return [{ title: lang === 'es' ? 'Próximamente' : 'Coming soon', sub: lang === 'es' ? 'reels, sets de VJ y edición' : 'reels, VJ sets and edits', dim: true }];
       case 'about':    return [{ title: lang === 'es' ? 'Leer' : 'Read', sub: 'josÚ — VJ · 3D · XR', go: () => this.setMode('about') }];
       case 'contact':  return [
@@ -72,7 +72,7 @@ export class ScreenUI {
       }
     } else if (this.mode === 'gallery') {
       const g = this.gal, p = PROJECTS[g.p];
-      if (b === 'left' || b === 'right') { g.i = (g.i + (b === 'right' ? 1 : -1) + p.images.length) % p.images.length; this.fx = this.now; }
+      if ((b === 'left' || b === 'right') && p.images.length) { g.i = (g.i + (b === 'right' ? 1 : -1) + p.images.length) % p.images.length; this.fx = this.now; }
       else if (b === 'up' || b === 'down') { g.p = (g.p + (b === 'down' ? 1 : -1) + PROJECTS.length) % PROJECTS.length; g.i = 0; this.fx = this.now; }
       else if (b === 'triangle' || b === 'cross') g.info = !g.info;
       else if (b === 'square' && p.link) this.onAction('link', p.link);
@@ -88,7 +88,7 @@ export class ScreenUI {
     const lang = getLang();
     if (this.mode === 'gallery') {
       const p = PROJECTS[this.gal.p];
-      return { idx: this.gal.i + 1, tot: p.images.length, label: CATS[p.cat][lang], title: L(p.title), glow: CATS[p.cat].glow };
+      return { idx: this.gal.i + 1, tot: p.images.length || 1, label: CATS[p.cat][lang], title: L(p.title), glow: CATS[p.cat].glow };
     }
     const c = XMB[this.col];
     const r = this.rows(c.id)[this.rowSel[this.col]];
@@ -227,6 +227,7 @@ export class ScreenUI {
     const { ctx, W, H } = this;
     const g = this.gal, p = PROJECTS[g.p], c = CATS[p.cat], es = getLang() === 'es';
     this.bg(c.c1, c.c2, now);
+    if (p.locked) return this.drawLocked(now, p, c, es);
     const im = this.img(p.images[g.i]);
     p.images.forEach((s, k) => Math.abs(k - g.i) <= 1 && this.img(s));   // precarga vecinas
     if (im) {
@@ -257,6 +258,33 @@ export class ScreenUI {
     }
     this.hint(es ? `← → fotos  ↑ ↓ proyecto  △ info${p.link ? '  □ link' : ''}  ○ volver`
                  : `← → photos  ↑ ↓ project  △ info${p.link ? '  □ link' : ''}  ○ back`);
+  }
+
+  // proyecto bloqueado: candado, sigilo de fondo y ruido; no muestra de qué se trata
+  drawLocked(now, p, c, es) {
+    const { ctx, W, H } = this;
+    ctx.save(); ctx.globalAlpha = 0.12; ctx.fillStyle = '#fff';
+    drawSigil(ctx, p.seed, W / 2, H / 2, H * 0.48, 0.012); ctx.restore();
+    for (let i = 0; i < 260; i++) {                                // estática
+      ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.08})`;
+      ctx.fillRect(Math.random() * W, Math.random() * H, 2 + Math.random() * 30, 1.5);
+    }
+    const cx = W / 2, cy = H * 0.4, bob = Math.sin(now * 2) * 3;
+    ctx.save(); ctx.translate(cx, cy + bob);
+    ctx.shadowColor = c.glow; ctx.shadowBlur = 24;
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 10; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(0, -22, 34, Math.PI, 0); ctx.lineTo(34, 4); ctx.moveTo(-34, -22); ctx.lineTo(-34, 4); ctx.stroke();
+    ctx.fillStyle = c.glow; ctx.beginPath(); ctx.roundRect(-54, 0, 108, 82, 10); ctx.fill();
+    ctx.shadowBlur = 0; ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(0, 32, 11, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(-4, 34, 8, 26);
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#fff'; ctx.font = '600 44px "Space Grotesk", sans-serif';
+    ctx.fillText(es ? 'Bloqueado' : 'Locked', cx, H * 0.78);
+    ctx.fillStyle = c.glow; ctx.font = '26px VT323, monospace';
+    ctx.fillText(L(p.desc), cx, H * 0.86);
+    this.topbar(`${L(p.title)}  ${p.year}`);
+    this.hint(es ? '↑ ↓ proyecto  ○ volver' : '↑ ↓ project  ○ back');
   }
 
   drawAbout(now) {
