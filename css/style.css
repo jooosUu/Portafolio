@@ -152,6 +152,7 @@ body.case-open { overflow: hidden; }
 .case__meta { color: var(--red-soft); font-size: .85rem; text-transform: uppercase; letter-spacing: .1em; }
 .case__title { font-family: var(--f-title); font-weight: 900; font-size: clamp(3rem, 8vw, 6.5rem); line-height: .9; margin: .6rem 0 1.2rem; }
 .case__lead { max-width: 44rem; font-size: clamp(1.05rem, 1.6vw, 1.3rem); line-height: 1.55; color: #ddd; }
+.case__links { display: flex; flex-wrap: wrap; gap: .4rem 1.6rem; }
 .case__link { display: inline-block; margin-top: 1.4rem; font-size: .85rem; border-bottom: 1px solid var(--red); padding-bottom: 2px; }
 .case__link:hover { color: var(--red); }
 .case__cols { display: grid; grid-template-columns: 1.6fr 1fr; gap: 3rem; margin: 3.5rem 0 1rem; }
