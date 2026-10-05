@@ -169,5 +169,8 @@ body.case-open { overflow: hidden; }
 .case__shot:hover img { transform: scale(1.04); filter: none; }
 .case__zoom { position: fixed; inset: 0; z-index: 3; background: rgba(0,0,0,.92); display: grid; place-items: center; cursor: zoom-out; padding: 4vh 4vw; }
 .case__zoom[hidden] { display: none; }
-.case__zoom img { max-width: 100%; max-height: 100%; border: 1px solid #333; }
+.case__zoom img, .case__zoom video { max-width: 100%; max-height: 100%; border: 1px solid #333; }
+.case__shot video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.case__shot.is-video::after { content: '▶'; position: absolute; right: .6rem; bottom: .5rem; font-size: .8rem; color: #fff; text-shadow: 0 0 6px #000; }
+.case__shot { position: relative; }
 @media (max-width: 700px) { .case__cols { grid-template-columns: 1fr; gap: 0; } .case__inner { padding-top: 7vh; } }

@@ -26,11 +26,21 @@ export class ScreenUI {
     PROJECTS.forEach((p) => this.img(p.images[0]));
   }
 
+  // imágenes y videos (.mp4 se reproducen en silencio y en bucle dentro de la pantalla)
   img(src) {
     if (!src) return null;
-    if (!this.imgs.has(src)) { const im = new Image(); im.src = src; this.imgs.set(src, im); }
-    const im = this.imgs.get(src);
-    return im.complete && im.naturalWidth ? im : null;
+    if (!this.imgs.has(src)) {
+      let m;
+      if (/\.mp4$/i.test(src)) {
+        m = document.createElement('video');
+        Object.assign(m, { src, muted: true, loop: true, playsInline: true, preload: 'auto' });
+        m.play().catch(() => {});
+      } else { m = new Image(); m.src = src; }
+      this.imgs.set(src, m);
+    }
+    const m = this.imgs.get(src);
+    if (m.tagName === 'VIDEO') { if (m.paused) m.play().catch(() => {}); return m.readyState >= 2 ? m : null; }
+    return m.complete && m.naturalWidth ? m : null;
   }
 
   /* ---------- filas de cada columna ---------- */
@@ -130,8 +140,9 @@ export class ScreenUI {
   }
 
   cover(im, x, y, w, h, fit = 'cover') {
-    const s = (fit === 'cover' ? Math.max : Math.min)(w / im.naturalWidth, h / im.naturalHeight);
-    const iw = im.naturalWidth * s, ih = im.naturalHeight * s;
+    const nw = im.videoWidth || im.naturalWidth, nh = im.videoHeight || im.naturalHeight;
+    const s = (fit === 'cover' ? Math.max : Math.min)(w / nw, h / nh);
+    const iw = nw * s, ih = nh * s;
     this.ctx.drawImage(im, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih);
   }
 
@@ -232,7 +243,10 @@ export class ScreenUI {
     p.images.forEach((s, k) => Math.abs(k - g.i) <= 1 && this.img(s));   // precarga vecinas
     if (im) {
       if (p.images.length === 1) this.cover(im, W * 0.25, H * 0.12, W * 0.5, H * 0.62, 'contain');
-      else this.cover(im, 0, 0, W, H);
+      else if ((im.videoHeight || im.naturalHeight) > (im.videoWidth || im.naturalWidth)) {
+        ctx.save(); ctx.filter = 'blur(18px) brightness(.5)'; this.cover(im, 0, 0, W, H); ctx.restore();
+        this.cover(im, 0, 0, W, H, 'contain');
+      } else this.cover(im, 0, 0, W, H);
     } else {
       ctx.fillStyle = 'rgba(255,255,255,.9)'; drawSigil(ctx, p.seed, W / 2, H * 0.45, H * 0.3, 0.014);
     }
