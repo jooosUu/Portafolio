@@ -55,9 +55,12 @@ export class ScreenUI {
 
   setMode(m) { this.mode = m; this.fx = this.now; this.onState(this.info()); }
   openGallery(p, full) { this.gal = { p, i: 0, full, info: true }; this.setMode('gallery'); }
+  // un UMD entró a la PSP: pantalla de "leyendo disco" y luego la galería de ese proyecto
+  loadDisc(p) { this.disc = { p, t0: this.now }; this.setMode('loading'); }
 
   /* ---------- entrada ---------- */
   press(b) {
+    if (this.mode === 'loading') return;
     if (b === 'select') return this.onAction('lang');
     if (b === 'display') return this.onAction('invert');
     if (b === 'home') { if (this.mode !== 'xmb') this.setMode('xmb'); return; }
@@ -86,9 +89,9 @@ export class ScreenUI {
   /* resumen para el texto fuera de la PSP */
   info() {
     const lang = getLang();
-    if (this.mode === 'gallery') {
-      const p = PROJECTS[this.gal.p];
-      return { idx: this.gal.i + 1, tot: p.images.length, label: CATS[p.cat][lang], title: L(p.title), glow: CATS[p.cat].glow };
+    if (this.mode === 'gallery' || this.mode === 'loading') {
+      const p = PROJECTS[this.mode === 'loading' ? this.disc.p : this.gal.p];
+      return { idx: this.mode === 'loading' ? 1 : this.gal.i + 1, tot: p.images.length, label: CATS[p.cat][lang], title: L(p.title), glow: CATS[p.cat].glow };
     }
     const c = XMB[this.col];
     const r = this.rows(c.id)[this.rowSel[this.col]];
@@ -275,9 +278,32 @@ export class ScreenUI {
     this.hint(getLang() === 'es' ? '○ volver' : '○ back');
   }
 
+  drawLoading(now) {
+    const { ctx, W, H } = this, p = PROJECTS[this.disc.p], c = CATS[p.cat], es = getLang() === 'es';
+    const dt = now - this.disc.t0;
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    // disco girando
+    const cx = W / 2, cy = H * 0.42, r = 74;
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(dt * 9);
+    ctx.strokeStyle = c.glow; ctx.lineWidth = 6; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 1.3); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.55, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#fff'; ctx.font = '600 40px "Space Grotesk", sans-serif';
+    ctx.fillText(L(p.title), cx, H * 0.78);
+    ctx.fillStyle = c.glow; ctx.font = '28px VT323, monospace';
+    const dots = '.'.repeat(1 + (Math.floor(dt * 4) % 3));
+    ctx.fillText((es ? 'leyendo UMD' : 'reading UMD') + dots, cx, H * 0.86);
+    if (dt > 1.3) this.openGallery(this.disc.p, false);
+  }
+
   draw(now) {
     this.now = now;
-    if (this.mode === 'gallery') this.drawGallery(now);
+    if (this.mode === 'loading') this.drawLoading(now);
+    else if (this.mode === 'gallery') this.drawGallery(now);
     else if (this.mode === 'about') this.drawAbout(now);
     else this.drawXMB(now);
 
