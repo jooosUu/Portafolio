@@ -249,5 +249,5 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     renderer.render(scene, camera);
   });
 
-  return { press, info: () => ui.info() };
+  return { press, info: () => ui.info(), open: (k) => { ui.openGallery(k, false); onState(ui.info()); } };
 }

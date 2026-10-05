@@ -39,7 +39,7 @@ export const PROJECTS = [
 
 export const LINKS = {
   instagram: 'https://www.instagram.com/badfacejosu/',
-  linkedin: null,   // pendiente
+  linkedin: 'https://www.linkedin.com/in/jose-ochoa-b12351135/',
 };
 
 /* Columnas del menú tipo XMB. icon = nombre de ícono dibujado en screen.js */
