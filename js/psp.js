@@ -66,7 +66,7 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
   // discos UMD (uno por proyecto) en stand horizontal
   const umds = createUMDs();
   scene.add(umds.group);
-  const STAND_GAP = 2.1;                                     // separación entre ranuras (los discos no se tocan)
+  const STAND_GAP = 3.9;                                     // separación entre ranuras (los discos no se tocan)
   const stand = createStand(umds.items.length, STAND_GAP);
   scene.add(stand.group);
   const slotLocalQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.13, 0, 0));   // inclinados hacia atrás en la ranura
@@ -234,7 +234,10 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     drag = null;
     if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && performance.now() - down.t < 450) {
       const o = pick(e);
-      if (o && o.userData.umd !== undefined) insert(o.userData.umd);
+      if (o && o.userData.umd !== undefined) {
+        if (e.pointerType === 'touch' && hovered !== o.userData.umd) hovered = o.userData.umd;   // 1er toque: muestra el nombre
+        else insert(o.userData.umd);
+      } else if (e.pointerType === 'touch') hovered = -1;
       else if (o && o.userData.btn) { rot.vx = rot.vy = 0; press(o.userData.btn); }
       else if (o) ui.press('cross');                 // tocar la pantalla = ✕
     }
@@ -304,9 +307,9 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    const k = modelW * 0.25 / UMD_W;                              // escala del stand y sus discos
+    const k = modelW * 0.22 / UMD_W;                              // escala del stand y sus discos
     stand.group.scale.setScalar(k);
-    const TILT = 0.34, TURN = -0.4;                               // visto un poco desde arriba y de lado
+    const TILT = 0.32, TURN = -0.95;                               // visto un poco desde arriba y de lado
     const pspH = modelW * 0.5, gap = modelW * 0.2;               // aire entre la PSP y el stand para que el disco suba sin taparla
     const standH = (stand.top + UMD_H - 0.5 + stand.depth * Math.sin(TILT)) * k;
     const stackH = pspH + gap + standH;
@@ -380,21 +383,12 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
       it.body.rotation.set(0, 0, 0);
     }
     const rc = canvas.getBoundingClientRect();
-    const rows = [];
-    let colX = 0;
     umds.items.forEach((it, i) => {
-      lp.set(UMD_W / 2, UMD_H / 2 - 0.4, 0).applyMatrix4(it.pivot.matrixWorld).project(camera);
-      colX = Math.max(colX, ((lp.x + 1) / 2) * rc.width);
-      rows.push({ i, y: ((1 - lp.y) / 2) * rc.height });
-    });
-    rows.sort((a, b) => a.y - b.y);                              // de arriba (atrás) hacia abajo (adelante)
-    const MIN = rc.width < 700 ? 26 : 38;
-    for (let r = 1; r < rows.length; r++) rows[r].y = Math.max(rows[r].y, rows[r - 1].y + MIN);
-    rows.forEach(({ i, y }) => {
-      const b = labels[i], st = umds.items[i].state;
-      b.style.opacity = st === 'flying' || st === 'inside' ? 0.25 : 1;
-      b.style.transform = `translate(${colX + 18}px, ${y}px) translate(0, -50%)`;
-      b.classList.toggle('is-hover', hovered === i);
+      const b = labels[i], on = hovered === i && (it.state === 'slot' || it.state === 'return');
+      b.classList.toggle('is-on', on);
+      if (!on) return;
+      lp.set(UMD_W / 2 + 0.3, UMD_H / 2 - 0.6, 0).applyMatrix4(it.pivot.matrixWorld).project(camera);
+      b.style.transform = `translate(${((lp.x + 1) / 2) * rc.width}px, ${((1 - lp.y) / 2) * rc.height}px) translate(0, -50%)`;
     });
     ui.draw(t); screenTex.needsUpdate = true;
     crt.uniforms.time.value = t;
