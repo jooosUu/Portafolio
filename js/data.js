@@ -37,7 +37,6 @@ export const PROJECTS = [
   },
   {
     id: 'desconexion', cat: 'vj', year: '2026', seed: 61, link: 'https://www.instagram.com/p/DbhNtfcKNMf/',
-    fx: { kind: 'flores', source: 'assets/works/desconexion/07.mp4' },   // filtro 'floresss' de TouchDesigner, en vivo
     images: ['01.jpg', '02.jpg', '03.jpg', '04.jpg', '05.jpg', '06.jpg', '07.mp4'].map((f) => `assets/works/desconexion/${f}`),
     tools: ['TouchDesigner', 'Video mapping', 'Proyección', 'Visuales en vivo'],
     title: { es: 'Desconexión', en: 'Desconexión' },
@@ -56,7 +55,6 @@ export const PROJECTS = [
   },
   {
     id: 'tunhouse', cat: 'vj', year: '2026', seed: 77, link: 'https://www.instagram.com/p/DYYJrbeqpoL/',
-    fx: { kind: 'entropy' },                                              // fondo de SYS ENTROPY, en vivo
     links: [
       { es: 'post del evento', en: 'event post', url: 'https://www.instagram.com/p/DXXtWagCsoK/' },
       { es: 'post de agradecimiento', en: 'thank-you post', url: 'https://www.instagram.com/p/DYYJrbeqpoL/' },
