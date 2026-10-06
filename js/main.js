@@ -4,6 +4,7 @@ import { sigilSVG } from './sigil.js';
 import { initPSP } from './psp.js';
 import { initTitere } from './titere.js';
 import { PROJECTS } from './data.js';
+import { openCase, isCaseOpen } from './case.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -64,7 +65,12 @@ const toggleInvert = () => {
   $('#invertToggle').setAttribute('aria-pressed', on);
 };
 const railIdx = $('#railIdx'), railTot = $('#railTot'), railCat = $('#railCat'), railTitle = $('#railTitle');
+const railOpen = $('#railOpen');
+let railProj = -1;
 const paintRail = (s) => {
+  railProj = s.proj ?? -1;
+  railOpen.hidden = railProj < 0;
+  railOpen.textContent = getLang() === 'es' ? 'ver proyecto ↗' : 'view project ↗';
   railIdx.textContent = String(s.idx).padStart(2, '0');
   railTot.textContent = '/' + String(s.tot).padStart(2, '0');
   railCat.textContent = s.label;
@@ -85,6 +91,7 @@ const psp = initPSP({
 });
 onLang(() => paintRail(psp.info()));
 
+railOpen.addEventListener('click', () => railProj >= 0 && openCase(railProj));
 document.querySelectorAll('[data-btn]').forEach((b) => b.addEventListener('click', () => psp.press(b.dataset.btn)));
 const KEYMAP = {
   ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
@@ -93,7 +100,7 @@ const KEYMAP = {
 };
 addEventListener('keydown', (e) => {
   const r = $('#work').getBoundingClientRect();
-  if (r.bottom < innerHeight * 0.3 || r.top > innerHeight * 0.7) return;   // solo con la PSP en pantalla
+  if (isCaseOpen() || r.bottom < innerHeight * 0.3 || r.top > innerHeight * 0.7) return;   // solo con la PSP en pantalla
   const b = KEYMAP[e.key] || KEYMAP[e.key.toLowerCase()];
   if (!b) return;
   e.preventDefault();
@@ -104,7 +111,7 @@ addEventListener('keydown', (e) => {
 function openFromHash() {
   const k = PROJECTS.findIndex((p) => '#' + p.id === location.hash);
   if (k < 0) return;
-  $('#work').scrollIntoView({ behavior: 'smooth' });
   psp.open(k);
+  openCase(k, { push: false });
 }
-addEventListener('hashchange', openFromHash);
+addEventListener('hashchange', () => { if (location.hash) openFromHash(); });
