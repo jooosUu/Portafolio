@@ -230,7 +230,7 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     if (inserted >= 0) {                       // el disco anterior vuelve a su lugar
       const old = umds.items[inserted];
       old.state = 'return'; old.pivot.visible = true;
-      old.pivot.position.copy(old.slot).add(new THREE.Vector3(0, old.slotScale * UMD_H * 0.6, 0));
+      old.pivot.position.copy(old.slot).add(new THREE.Vector3(0, old.slotScale * UMD_H * 0.35, 0));
     }
     it.state = 'flying';
     const t = clock.getElapsedTime();
@@ -281,14 +281,14 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     camera.aspect = w / h;
     // PSP arriba y la fila de UMDs debajo; la cámara se aleja lo justo para que quepan las dos cosas
     const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    const pspH = modelW * 0.5, gap = modelW * 0.08;
+    const pspH = modelW * 0.5, gap = modelW * 0.22;
     const k = modelW * 0.3 / UMD_W;                              // escala del stand y sus discos
     const standH = (stand.top + UMD_H - 0.5) * k;
     const stackH = pspH + gap + standH;
     camera.position.z = Math.max(modelW / (0.9 * 2 * tan * camera.aspect), stackH / (0.76 * 2 * tan));
     camera.updateProjectionMatrix();
     const vh = 2 * camera.position.z * tan;
-    const top = stackH / 2 - vh * 0.05;
+    const top = stackH / 2 - vh * 0.04;
     baseY = top - pspH / 2;
     stand.group.scale.setScalar(k);
     stand.group.rotation.set(0.1, -0.85, 0);          // 3/4: los discos se ven en abanico
@@ -339,12 +339,12 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
         it.pivot.scale.setScalar(THREE.MathUtils.lerp(it.pivot.scale.x, it.slotScale, 0.15));
         if (it.pivot.position.distanceTo(it.slot) < H * 0.01) it.state = 'slot';
       } else {
-        // sale de la ranura hacia arriba y gira de frente a la cámara
+        // sale de la ranura hacia arriba y hacia adelante sin chocar con la PSP
         it.pivot.position.copy(it.slot);
-        it.pivot.position.y += it.hover * H * 0.55;
-        it.pivot.position.z += it.hover * H * 0.35;
-        it.pivot.quaternion.copy(it.slotQ).slerp(qIdent, it.hover * 0.8);
-        it.pivot.scale.setScalar(it.slotScale * (1 + it.hover * 0.12));
+        it.pivot.position.y += it.hover * H * 0.22;
+        it.pivot.position.z += it.hover * H * 0.45;
+        it.pivot.quaternion.copy(it.slotQ).slerp(qIdent, it.hover * 0.85);
+        it.pivot.scale.setScalar(it.slotScale * (1 + it.hover * 0.08));
       }
       it.body.rotation.set(0, 0, 0);
     }
