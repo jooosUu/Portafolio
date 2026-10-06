@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { ScreenUI } from './screen.js';
-import { createUMDs, UMD_W, UMD_H } from './umd.js';
+import { createUMDs, createStand, UMD_W, UMD_H } from './umd.js';
 
 const CRT_VERT = /* glsl */`
   varying vec2 vUv;
@@ -64,6 +64,10 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
   // discos UMD (uno por proyecto) en fila debajo de la PSP
   const umds = createUMDs();
   scene.add(umds.group);
+  const STAND_GAP = 1.55;
+  const stand = createStand(umds.items.length, STAND_GAP);
+  scene.add(stand.group);
+  const slotLocalQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.13, 0, 0));   // inclinados hacia atrás en la ranura
   const backFlash = new THREE.PointLight(0xffffff, 0, 10, 1.5); scene.add(backFlash);
 
   const rim = new THREE.DirectionalLight(0xb9c8ff, 2.2); rim.position.set(8, 6, -6); scene.add(rim);
@@ -277,19 +281,24 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     camera.aspect = w / h;
     // PSP arriba y la fila de UMDs debajo; la cámara se aleja lo justo para que quepan las dos cosas
     const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    const N = umds.items.length;
-    const pspH = modelW * 0.5, umdW = modelW * 0.25, umdH = umdW * UMD_H / UMD_W, gapX = umdW * 0.35, gap = modelW * 0.1;
-    const rowW = N * umdW + (N - 1) * gapX, stackH = pspH + gap + umdH;
-    camera.position.z = Math.max(Math.max(modelW, rowW) / (0.9 * 2 * tan * camera.aspect), stackH / (0.74 * 2 * tan));
+    const pspH = modelW * 0.5, gap = modelW * 0.08;
+    const k = modelW * 0.3 / UMD_W;                              // escala del stand y sus discos
+    const standH = (stand.top + UMD_H - 0.5) * k;
+    const stackH = pspH + gap + standH;
+    camera.position.z = Math.max(modelW / (0.9 * 2 * tan * camera.aspect), stackH / (0.76 * 2 * tan));
     camera.updateProjectionMatrix();
     const vh = 2 * camera.position.z * tan;
     const top = stackH / 2 - vh * 0.05;
     baseY = top - pspH / 2;
-    const rowY = top - pspH - gap - umdH / 2;
+    stand.group.scale.setScalar(k);
+    stand.group.rotation.set(0.1, -0.85, 0);          // 3/4: los discos se ven en abanico
+    stand.group.position.set(0, top - pspH - gap - standH, 0);
+    stand.group.updateMatrixWorld(true);
     umds.items.forEach((it, i) => {
-      it.slot.set(-rowW / 2 + umdW / 2 + i * (umdW + gapX), rowY, 0);
-      it.slotScale = umdW / UMD_W;
-      if (it.state === 'slot') { it.pivot.position.copy(it.slot); it.pivot.scale.setScalar(it.slotScale); }
+      it.slot.set(0, stand.top + UMD_H / 2 - 0.5, stand.slotZ(i)).applyMatrix4(stand.group.matrixWorld);
+      it.slotQ.copy(stand.group.quaternion).multiply(slotLocalQ);
+      it.slotScale = k;
+      if (it.state === 'slot') { it.pivot.position.copy(it.slot); it.pivot.quaternion.copy(it.slotQ); it.pivot.scale.setScalar(k); }
     });
   };
   new ResizeObserver(resize).observe(stage); resize();
@@ -316,21 +325,28 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     // discos en la fila: flotan, se levantan con el mouse y el disco gira por dentro
     const dt = 1 / 60;
     for (const it of umds.items) {
-      it.disc.rotation.z -= dt * (0.5 + it.hover * 7 + (it.state === 'flying' ? 12 : 0));
+      it.disc.rotation.z -= dt * (it.hover * 6 + (it.state === 'flying' ? 12 : 0));
+      if (it.hover < 0.05 && it.state === 'slot') {          // quieto: el disco vuelve a quedar derecho
+        const up = Math.round(it.disc.rotation.z / (Math.PI * 2)) * Math.PI * 2;
+        it.disc.rotation.z += (up - it.disc.rotation.z) * 0.06;
+      }
       if (it.state === 'inside' || it.state === 'flying') continue;
       it.hover += ((hovered === it.i ? 1 : 0) - it.hover) * 0.15;
       const H = it.slotScale * UMD_H;
       if (it.state === 'return') {
         it.pivot.position.lerp(it.slot, 0.12);
-        it.pivot.quaternion.slerp(qIdent, 0.15);
+        it.pivot.quaternion.slerp(it.slotQ, 0.15);
         it.pivot.scale.setScalar(THREE.MathUtils.lerp(it.pivot.scale.x, it.slotScale, 0.15));
         if (it.pivot.position.distanceTo(it.slot) < H * 0.01) it.state = 'slot';
       } else {
-        it.pivot.position.set(it.slot.x, it.slot.y + it.hover * H * 0.14 + Math.sin(t * 1.1 + it.i) * H * 0.012, it.slot.z + it.hover * H * 0.25);
-        it.pivot.quaternion.identity();
-        it.pivot.scale.setScalar(it.slotScale * (1 + it.hover * 0.08));
+        // sale de la ranura hacia arriba y gira de frente a la cámara
+        it.pivot.position.copy(it.slot);
+        it.pivot.position.y += it.hover * H * 0.55;
+        it.pivot.position.z += it.hover * H * 0.35;
+        it.pivot.quaternion.copy(it.slotQ).slerp(qIdent, it.hover * 0.8);
+        it.pivot.scale.setScalar(it.slotScale * (1 + it.hover * 0.12));
       }
-      it.body.rotation.set(-0.15 * (1 - it.hover), Math.sin(t * 0.6 + it.i * 1.3) * 0.28 * (1 - it.hover), 0);
+      it.body.rotation.set(0, 0, 0);
     }
     ui.draw(t); screenTex.needsUpdate = true;
     crt.uniforms.time.value = t;
