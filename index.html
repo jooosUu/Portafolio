@@ -31,6 +31,9 @@
 <!-- títere de "Encajonado": fijo en la esquina, acompaña el scroll -->
 <div class="titere"><canvas id="titereCanvas" aria-label="Títere de Encajonado — tócalo para que salude"></canvas></div>
 
+<!-- ficha de proyecto (vista completa fuera de la PSP) -->
+<div class="case" id="case" role="dialog" aria-modal="true" hidden></div>
+
 <main>
 
 <!-- ============ 01 · HERO ============ -->
@@ -64,6 +67,7 @@
     <b id="railIdx">01</b><i id="railTot">/06</i>
     <span class="rail__cat mono" id="railCat"></span>
     <span class="rail__title" id="railTitle"></span>
+    <button class="rail__open mono" id="railOpen" hidden>ver proyecto ↗</button>
   </div>
   <div class="keys">
     <button class="key" data-btn="left" aria-label="Izquierda">←</button>
