@@ -131,6 +131,16 @@ body::before {
   html { scroll-behavior: auto; }
 }
 
+/* ---------- versión UMD: textos arriba, PSP al centro, discos abajo ---------- */
+.machine .rail { top: calc(6vh + 2.4rem); bottom: auto; }
+.machine .rail b { font-size: clamp(2.2rem, 4vw, 3.4rem); }
+.machine .keys { top: 5vh; bottom: auto; right: 5vw; }
+@media (max-width: 700px) {
+  .machine .rail { top: calc(6vh + 2rem); bottom: auto; }
+  .machine .keys { top: auto; bottom: 6vh; left: 50%; right: auto; transform: translateX(-50%); }
+  .machine__hint { bottom: 1.5vh; font-size: .8rem; }
+}
+
 /* ---------- acentos rojos (sutiles) ---------- */
 .rail b { color: var(--fg); }
 .rail__cat { color: var(--red-soft); }

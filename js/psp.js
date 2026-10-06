@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { ScreenUI } from './screen.js';
+import { createUMDs, createStand, UMD_W, UMD_H } from './umd.js';
 
 const CRT_VERT = /* glsl */`
   varying vec2 vUv;
@@ -59,6 +60,15 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
 
   const spin = new THREE.Group();          // giro del usuario + flotación
   scene.add(spin);
+
+  // discos UMD (uno por proyecto) en fila debajo de la PSP
+  const umds = createUMDs();
+  scene.add(umds.group);
+  const STAND_GAP = 1.55;
+  const stand = createStand(umds.items.length, STAND_GAP);
+  scene.add(stand.group);
+  const slotLocalQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.13, 0, 0));   // inclinados hacia atrás en la ranura
+  const backFlash = new THREE.PointLight(0xffffff, 0, 10, 1.5); scene.add(backFlash);
 
   const rim = new THREE.DirectionalLight(0xb9c8ff, 2.2); rim.position.set(8, 6, -6); scene.add(rim);
   const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(-6, 8, 10); scene.add(key);
@@ -141,7 +151,8 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     const size = body.getSize(new THREE.Vector3()).length();
     holder.scale.setScalar(19 / size);
     spin.add(holder);
-    modelW = new THREE.Box3().setFromObject(holder).getSize(new THREE.Vector3()).x;
+    const hs = new THREE.Box3().setFromObject(holder).getSize(new THREE.Vector3());
+    modelW = hs.x; modelD = hs.z;
     resize();
 
     // recorrido de cada botón al hundirse, en el espacio local de su padre
@@ -153,7 +164,7 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
       bt.userData.push = bt.parent.worldToLocal(wp.add(inward)).sub(bt.position);
       bt.userData.t = 0;
     }
-    pickables = [...buttons, screen];
+    pickables = [...buttons, screen, ...umds.meshes];
 
     stage.classList.add('is-ready');
     onState(ui.info());
@@ -187,6 +198,7 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
   canvas.addEventListener('pointermove', (e) => {
     if (!drag) {
       const o = pick(e);
+      hovered = o && o.userData.umd !== undefined ? o.userData.umd : -1;
       canvas.style.cursor = o ? 'pointer' : '';
       return;
     }
@@ -200,23 +212,94 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     drag = null;
     if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && performance.now() - down.t < 450) {
       const o = pick(e);
-      if (o && o.userData.btn) { rot.vx = rot.vy = 0; press(o.userData.btn); }
+      if (o && o.userData.umd !== undefined) insert(o.userData.umd);
+      else if (o && o.userData.btn) { rot.vx = rot.vy = 0; press(o.userData.btn); }
       else if (o) ui.press('cross');                 // tocar la pantalla = ✕
     }
     down = null;
   });
   canvas.addEventListener('pointercancel', () => { drag = down = null; });
+  canvas.addEventListener('pointerleave', () => { hovered = -1; });
+
+  /* ---------- insertar un UMD: la PSP se voltea, el disco entra por atrás y arranca el proyecto ---------- */
+  let hovered = -1, seq = null, inserted = -1;
+  const ease = (x) => x * x * (3 - 2 * x);
+  const insert = (k) => {
+    const it = umds.items[k];
+    if (seq || !modelD || it.state !== 'slot') return;
+    if (inserted >= 0) {                       // el disco anterior vuelve a su lugar
+      const old = umds.items[inserted];
+      old.state = 'return'; old.pivot.visible = true;
+      old.pivot.position.copy(old.slot).add(new THREE.Vector3(0, old.slotScale * UMD_H * 0.6, 0));
+    }
+    it.state = 'flying';
+    const t = clock.getElapsedTime();
+    const yBack = Math.round((rot.y - Math.PI) / (Math.PI * 2)) * Math.PI * 2 + Math.PI;
+    seq = { k, t0: t, y0: rot.y, yBack, from: it.pivot.position.clone(), q0: it.pivot.quaternion.clone(), s0: it.pivot.scale.x, loaded: false };
+    inserted = k;
+  };
+  const backPoint = (out, z) => spin.localToWorld(out.set(0, 0, -modelD / 2 - z));
+  const tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3(), qBack = new THREE.Quaternion();
+  const qFlip = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
+  function stepSeq(t) {
+    const e = t - seq.t0, it = umds.items[seq.k];
+    rot.vx = rot.vy = 0; rot.x += (0 - rot.x) * 0.15;
+    if (e < 0.7) rot.y = THREE.MathUtils.lerp(seq.y0, seq.yBack, ease(e / 0.7));
+    else if (e < 1.3) rot.y = seq.yBack;
+    else rot.y = THREE.MathUtils.lerp(seq.yBack, seq.yBack + Math.PI, ease(Math.min(1, (e - 1.3) / 0.75)));
+    spin.rotation.y = rot.y;
+    spin.updateMatrixWorld(true);
+    const sIn = modelW * 0.36 / UMD_W;          // tamaño real del UMD respecto a la PSP
+    qBack.copy(spin.quaternion).multiply(qFlip);  // de frente a la cámara cuando la PSP está de espaldas
+    it.body.rotation.set(0, 0, 0);
+    if (e < 0.85) {                             // vuela desde la fila hasta detrás de la PSP
+      const k = ease(e / 0.85);
+      backPoint(tmpA, 2.6);
+      it.pivot.position.lerpVectors(seq.from, tmpA, k);
+      it.pivot.position.y += Math.sin(k * Math.PI) * modelW * 0.12;
+      it.pivot.scale.setScalar(THREE.MathUtils.lerp(seq.s0, sIn, k));
+      it.pivot.quaternion.slerpQuaternions(seq.q0, qBack, k);
+    } else if (e < 1.25) {                      // entra
+      const k = ease((e - 0.85) / 0.4);
+      it.pivot.position.lerpVectors(backPoint(tmpA, 2.6), backPoint(tmpB, -0.2), k);
+      it.pivot.quaternion.copy(qBack);
+      it.pivot.scale.setScalar(sIn * (1 - 0.12 * k));
+      backFlash.position.copy(backPoint(tmpB, 1.2));
+      backFlash.intensity = Math.sin(k * Math.PI) * 40;
+    } else if (it.state === 'flying') {
+      it.state = 'inside'; it.pivot.visible = false; backFlash.intensity = 0;
+    }
+    if (e >= 1.3 && !seq.loaded) { seq.loaded = true; ui.loadDisc(seq.k); onState(ui.info()); }
+    if (e >= 2.1) { seq = null; lastInput = t; }
+  }
 
   /* ---------- tamaño y visibilidad ---------- */
-  let modelW = 17;
+  let modelW = 17, modelD = 0, baseY = 0;
   const resize = () => {
     const w = stage.clientWidth, h = stage.clientHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    // distancia para que el ancho de la PSP ocupe ~70% del ancho visible (y no pase del alto)
+    // PSP arriba y la fila de UMDs debajo; la cámara se aleja lo justo para que quepan las dos cosas
     const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    camera.position.z = Math.max(modelW / (0.92 * 2 * tan * camera.aspect), modelW * 0.5 / (0.8 * 2 * tan));
+    const pspH = modelW * 0.5, gap = modelW * 0.08;
+    const k = modelW * 0.3 / UMD_W;                              // escala del stand y sus discos
+    const standH = (stand.top + UMD_H - 0.5) * k;
+    const stackH = pspH + gap + standH;
+    camera.position.z = Math.max(modelW / (0.9 * 2 * tan * camera.aspect), stackH / (0.76 * 2 * tan));
     camera.updateProjectionMatrix();
+    const vh = 2 * camera.position.z * tan;
+    const top = stackH / 2 - vh * 0.05;
+    baseY = top - pspH / 2;
+    stand.group.scale.setScalar(k);
+    stand.group.rotation.set(0.1, -0.85, 0);          // 3/4: los discos se ven en abanico
+    stand.group.position.set(0, top - pspH - gap - standH, 0);
+    stand.group.updateMatrixWorld(true);
+    umds.items.forEach((it, i) => {
+      it.slot.set(0, stand.top + UMD_H / 2 - 0.5, stand.slotZ(i)).applyMatrix4(stand.group.matrixWorld);
+      it.slotQ.copy(stand.group.quaternion).multiply(slotLocalQ);
+      it.slotScale = k;
+      if (it.state === 'slot') { it.pivot.position.copy(it.slot); it.pivot.quaternion.copy(it.slotQ); it.pivot.scale.setScalar(k); }
+    });
   };
   new ResizeObserver(resize).observe(stage); resize();
   let visible = true;
@@ -225,10 +308,12 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
   /* ---------- loop ---------- */
   const clock = new THREE.Clock();
   const glow = new THREE.Color();
+  const qIdent = new THREE.Quaternion();
   renderer.setAnimationLoop(() => {
     if (!visible) return;
     const t = clock.getElapsedTime();
-    if (!drag) {
+    if (seq) stepSeq(t);
+    else if (!drag) {
       rot.y += rot.vy; rot.x += rot.vx; rot.vx *= 0.94; rot.vy *= 0.94;
       if (t - lastInput > 2.5) {            // vuelve suave al frente cuando nadie la toca
         const ty = Math.round(rot.y / (Math.PI * 2)) * Math.PI * 2;
@@ -236,7 +321,33 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
       }
     }
     spin.rotation.set(rot.x + Math.sin(t * 0.7) * 0.06, rot.y + Math.sin(t * 0.5) * 0.12, Math.sin(t * 0.6) * 0.03);
-    spin.position.y = Math.sin(t * 0.9) * 0.25;
+    spin.position.y = baseY + Math.sin(t * 0.9) * 0.25;
+    // discos en la fila: flotan, se levantan con el mouse y el disco gira por dentro
+    const dt = 1 / 60;
+    for (const it of umds.items) {
+      it.disc.rotation.z -= dt * (it.hover * 6 + (it.state === 'flying' ? 12 : 0));
+      if (it.hover < 0.05 && it.state === 'slot') {          // quieto: el disco vuelve a quedar derecho
+        const up = Math.round(it.disc.rotation.z / (Math.PI * 2)) * Math.PI * 2;
+        it.disc.rotation.z += (up - it.disc.rotation.z) * 0.06;
+      }
+      if (it.state === 'inside' || it.state === 'flying') continue;
+      it.hover += ((hovered === it.i ? 1 : 0) - it.hover) * 0.15;
+      const H = it.slotScale * UMD_H;
+      if (it.state === 'return') {
+        it.pivot.position.lerp(it.slot, 0.12);
+        it.pivot.quaternion.slerp(it.slotQ, 0.15);
+        it.pivot.scale.setScalar(THREE.MathUtils.lerp(it.pivot.scale.x, it.slotScale, 0.15));
+        if (it.pivot.position.distanceTo(it.slot) < H * 0.01) it.state = 'slot';
+      } else {
+        // sale de la ranura hacia arriba y gira de frente a la cámara
+        it.pivot.position.copy(it.slot);
+        it.pivot.position.y += it.hover * H * 0.55;
+        it.pivot.position.z += it.hover * H * 0.35;
+        it.pivot.quaternion.copy(it.slotQ).slerp(qIdent, it.hover * 0.8);
+        it.pivot.scale.setScalar(it.slotScale * (1 + it.hover * 0.12));
+      }
+      it.body.rotation.set(0, 0, 0);
+    }
     ui.draw(t); screenTex.needsUpdate = true;
     crt.uniforms.time.value = t;
     screenLight.color.lerp(glow.set(ui.info().glow), 0.08);
@@ -249,5 +360,5 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     renderer.render(scene, camera);
   });
 
-  return { press, info: () => ui.info(), open: (k) => { ui.openGallery(k, false); onState(ui.info()); } };
+  return { press, info: () => ui.info(), relabel: umds.relabel, insert, open: (k) => { ui.openGallery(k, false); onState(ui.info()); } };
 }
