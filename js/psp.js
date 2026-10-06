@@ -66,7 +66,7 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
   // discos UMD (uno por proyecto) en stand horizontal
   const umds = createUMDs();
   scene.add(umds.group);
-  const STAND_GAP = 7.6;
+  const STAND_GAP = 2.1;                                     // separación entre ranuras (los discos no se tocan)
   const stand = createStand(umds.items.length, STAND_GAP);
   scene.add(stand.group);
   const slotLocalQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.13, 0, 0));   // inclinados hacia atrás en la ranura
@@ -304,38 +304,28 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    const k = Math.min(modelW * 0.26 / UMD_W, 0.62);
+    const k = modelW * 0.25 / UMD_W;                              // escala del stand y sus discos
     stand.group.scale.setScalar(k);
-
-    const pspH = modelW * 0.5;
-    const standW = stand.width * k;
-    const gap = modelW * 0.16;
-    const standH = (stand.top + UMD_H - 0.5) * k;
+    const TILT = 0.34, TURN = -0.4;                               // visto un poco desde arriba y de lado
+    const pspH = modelW * 0.5, gap = modelW * 0.2;               // aire entre la PSP y el stand para que el disco suba sin taparla
+    const standH = (stand.top + UMD_H - 0.5 + stand.depth * Math.sin(TILT)) * k;
     const stackH = pspH + gap + standH;
-
     baseX = 0;
-    camera.position.z = Math.max(Math.max(modelW, standW) / (0.86 * 2 * tan * camera.aspect), stackH / (0.76 * 2 * tan));
+    camera.position.z = Math.max(modelW / (0.86 * 2 * tan * camera.aspect), stackH / (0.8 * 2 * tan));
     camera.updateProjectionMatrix();
-
     const vh = 2 * camera.position.z * tan;
-    const top = stackH / 2 - vh * 0.03;
+    const top = stackH / 2 - vh * 0.02;
     baseY = top - pspH / 2;
-
-    stand.group.rotation.set(0.12, 0, 0); // exhibidor frontal elegante y nivelado
-    stand.group.position.set(0, top - pspH - gap - standH, 0);
+    stand.group.rotation.set(TILT, TURN, 0);
+    stand.group.position.set(-modelW * 0.08, top - pspH - gap - (stand.top + UMD_H - 0.5) * k, stand.depth * k * 0.35);
     stand.group.updateMatrixWorld(true);
-
     umds.items.forEach((it, i) => {
       const pos = stand.slotPos(i).clone();
       pos.y += UMD_H / 2 - 0.5;
       it.slot.copy(pos).applyMatrix4(stand.group.matrixWorld);
       it.slotQ.copy(stand.group.quaternion).multiply(slotLocalQ);
       it.slotScale = k;
-      if (it.state === 'slot') {
-        it.pivot.position.copy(it.slot);
-        it.pivot.quaternion.copy(it.slotQ);
-        it.pivot.scale.setScalar(k);
-      }
+      if (it.state === 'slot') { it.pivot.position.copy(it.slot); it.pivot.quaternion.copy(it.slotQ); it.pivot.scale.setScalar(k); }
     });
   };
   new ResizeObserver(resize).observe(stage); resize();
@@ -376,26 +366,34 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
         it.pivot.scale.setScalar(THREE.MathUtils.lerp(it.pivot.scale.x, it.slotScale, 0.15));
         if (it.pivot.position.distanceTo(it.slot) < H * 0.01) it.state = 'slot';
       } else {
-        // en reposo flota apenas; con el mouse sale de la ranura, se adelanta y gira de frente a la cámara
+        // en reposo flota apenas; con el mouse sale RECTO de la ranura y, ya afuera, gira un poco hacia la cámara
         const slotUp = new THREE.Vector3(0, 1, 0).applyQuaternion(it.slotQ);
         const slotForward = new THREE.Vector3(0, 0, 1).applyQuaternion(it.slotQ);
-        const bob = Math.sin(t * 1.4 + it.i * 1.1) * H * 0.015 * (1 - it.hover);
+        const out = Math.max(0, (it.hover - 0.55) / 0.45);
+        const bob = Math.sin(t * 1.4 + it.i * 1.1) * H * 0.012 * (1 - it.hover);
         it.pivot.position.copy(it.slot)
-          .addScaledVector(slotUp, it.hover * H * 0.42 + bob)
-          .addScaledVector(slotForward, it.hover * H * 0.35);
-        it.pivot.quaternion.copy(it.slotQ).slerp(qIdent, it.hover * 0.6);
-        it.pivot.scale.setScalar(it.slotScale * (1 + it.hover * 0.1));
+          .addScaledVector(slotUp, Math.min(1, it.hover / 0.55) * H * 0.78 + bob)
+          .addScaledVector(slotForward, out * H * 0.25);
+        it.pivot.quaternion.copy(it.slotQ).slerp(qIdent, out * 0.55);
+        it.pivot.scale.setScalar(it.slotScale * (1 + out * 0.08));
       }
       it.body.rotation.set(0, 0, 0);
     }
     const rc = canvas.getBoundingClientRect();
+    const rows = [];
+    let colX = 0;
     umds.items.forEach((it, i) => {
-      const b = labels[i];
-      const show = it.state === 'slot' || it.state === 'return';
-      b.style.opacity = show ? 1 : 0;
-      if (!show) return;
-      lp.set(0, UMD_H / 2 + 0.55, 0).applyMatrix4(it.pivot.matrixWorld).project(camera);
-      b.style.transform = `translate(${((lp.x + 1) / 2) * rc.width}px, ${((1 - lp.y) / 2) * rc.height}px) translate(-50%, -100%)`;
+      lp.set(UMD_W / 2, UMD_H / 2 - 0.4, 0).applyMatrix4(it.pivot.matrixWorld).project(camera);
+      colX = Math.max(colX, ((lp.x + 1) / 2) * rc.width);
+      rows.push({ i, y: ((1 - lp.y) / 2) * rc.height });
+    });
+    rows.sort((a, b) => a.y - b.y);                              // de arriba (atrás) hacia abajo (adelante)
+    const MIN = rc.width < 700 ? 26 : 38;
+    for (let r = 1; r < rows.length; r++) rows[r].y = Math.max(rows[r].y, rows[r - 1].y + MIN);
+    rows.forEach(({ i, y }) => {
+      const b = labels[i], st = umds.items[i].state;
+      b.style.opacity = st === 'flying' || st === 'inside' ? 0.25 : 1;
+      b.style.transform = `translate(${colX + 18}px, ${y}px) translate(0, -50%)`;
       b.classList.toggle('is-hover', hovered === i);
     });
     ui.draw(t); screenTex.needsUpdate = true;
