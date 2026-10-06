@@ -90,8 +90,8 @@ export class ScreenUI {
   info() {
     const lang = getLang();
     if (this.mode === 'gallery' || this.mode === 'loading') {
-      const p = PROJECTS[this.mode === 'loading' ? this.disc.p : this.gal.p];
-      return { idx: this.mode === 'loading' ? 1 : this.gal.i + 1, tot: p.images.length || 1, label: CATS[p.cat][lang], title: L(p.title), glow: CATS[p.cat].glow };
+      const k = this.mode === 'loading' ? this.disc.p : this.gal.p, p = PROJECTS[k];
+      return { idx: this.mode === 'loading' ? 1 : this.gal.i + 1, tot: p.images.length || 1, label: CATS[p.cat][lang], title: L(p.title), glow: CATS[p.cat].glow, proj: k };
     }
     const c = XMB[this.col];
     const r = this.rows(c.id)[this.rowSel[this.col]];
