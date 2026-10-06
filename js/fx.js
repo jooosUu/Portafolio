@@ -1,10 +1,10 @@
 /* Efectos de TouchDesigner recreados en WebGL para las fichas de proyecto.
-   - 'entropy'  (Tunhouse): el fondo de SYS ENTROPY — estallido radial de ruido con feedback de bordes
-                (red 'nubeeeee' de todoslosdehoy.toe, basada en el Audio-Reactive Cosmic Cloud de SOLA).
+   - 'estela'   (Tunhouse): el fondo de SYS ENTROPY — red 'estela_' de TODOS.toe, traducida en estela.js.
    - 'flores'   (Desconexión): el filtro 'floresss' — bordes rosados + umbral, feedback "burn",
                 radial blur (mismo GLSL del .toe), retraso RGB y blob tracking.
    Los dos reaccionan al audio: micrófono si la persona lo activa; si no, un pulso simulado a 124 bpm. */
 import * as THREE from 'three';
+import { createEstela } from './estela.js';
 
 /* ---------------- audio: micrófono o pulso simulado ---------------- */
 class Audio {
@@ -46,50 +46,6 @@ const NOISE = /* glsl */`
                mix(mix(dot(hash3(i+vec3(0,0,1)),f-vec3(0,0,1)), dot(hash3(i+vec3(1,0,1)),f-vec3(1,0,1)),u.x),
                    mix(dot(hash3(i+vec3(0,1,1)),f-vec3(0,1,1)), dot(hash3(i+vec3(1,1,1)),f-vec3(1,1,1)),u.x),u.y),u.z); }
   float fbm(vec3 p){ float a = 0.5, s = 0.0; for (int i = 0; i < 6; i++){ s += a*noise(p); p *= 2.02; a *= 0.5; } return s; }`;
-
-/* ---------------- ENTROPY: estallido radial con feedback ---------------- */
-const ENTROPY_SIM = /* glsl */`
-  precision highp float; varying vec2 vUv;
-  uniform sampler2D uPrev; uniform float uTime, uLow, uMid, uHigh, uAspect; uniform vec2 uMouse;
-  ${NOISE}
-  void main(){
-    vec2 p = (vUv - 0.5) * vec2(uAspect, 1.0) - (uMouse - 0.5) * 0.15;
-    float r = length(p), a = atan(p.y, p.x);
-    // rampa circular desplazada por ruido perlin (harmon alto) que avanza en z con el tiempo
-    float n = fbm(vec3(p * 2.2, uTime * 0.12));
-    float spikes = fbm(vec3(cos(a) * 1.6, sin(a) * 1.6, uTime * 0.25 + uMid));
-    float d = r + (n - 0.0) * (0.22 + uLow * 0.22) - spikes * (0.18 + uMid * 0.25);
-    float burst = smoothstep(0.48 + uLow * 0.16, 0.02, d);
-    // feedback: la imagen anterior se expande un poco hacia afuera y se apaga (bordes de humo)
-    vec2 c = vUv - 0.5;
-    vec2 fuv = 0.5 + c * (0.986 - uLow * 0.01) + vec2(noise(vec3(vUv * 6.0, uTime * 0.3)), noise(vec3(vUv * 6.0 + 7.0, uTime * 0.3))) * 0.003;
-    float prev = texture2D(uPrev, fuv).r * (0.93 + uHigh * 0.04);
-    gl_FragColor = vec4(max(burst, prev), burst, 0.0, 1.0);
-  }`;
-const ENTROPY_SHOW = /* glsl */`
-  precision highp float; varying vec2 vUv;
-  uniform sampler2D uSim; uniform float uTime, uLow; uniform vec2 uTexel;
-  vec3 palette(float v){                       // colores del fondo de SYS ENTROPY en Tunhouse
-    vec3 c0 = vec3(0.02,0.01,0.06), c1 = vec3(0.16,0.10,0.66), c2 = vec3(0.54,0.24,0.88),
-         c3 = vec3(1.00,0.37,0.72), c4 = vec3(1.00,0.82,0.23), c5 = vec3(1.00,0.97,0.80);
-    if (v < 0.2) return mix(c0, c1, v / 0.2);
-    if (v < 0.42) return mix(c1, c2, (v - 0.2) / 0.22);
-    if (v < 0.62) return mix(c2, c3, (v - 0.42) / 0.2);
-    if (v < 0.82) return mix(c3, c4, (v - 0.62) / 0.2);
-    return mix(c4, c5, (v - 0.82) / 0.18);
-  }
-  void main(){
-    float v = texture2D(uSim, vUv).r;
-    // brillo de bordes (feedbackEdge) y un bloom barato con 8 muestras
-    float gx = texture2D(uSim, vUv + vec2(uTexel.x, 0)).r - texture2D(uSim, vUv - vec2(uTexel.x, 0)).r;
-    float gy = texture2D(uSim, vUv + vec2(0, uTexel.y)).r - texture2D(uSim, vUv - vec2(0, uTexel.y)).r;
-    float edge = length(vec2(gx, gy)) * 6.0;
-    float glow = 0.0;
-    for (int i = 0; i < 8; i++){ float an = float(i) * 0.785; glow += texture2D(uSim, vUv + vec2(cos(an), sin(an)) * uTexel * 14.0).r; }
-    glow /= 8.0;
-    vec3 col = palette(clamp(v * 0.95 + edge * 0.25, 0.0, 1.0)) + palette(glow) * 0.35 * (0.6 + uLow);
-    gl_FragColor = vec4(col, 1.0);
-  }`;
 
 /* ---------------- FLORES: filtro floresss ---------------- */
 const FLORES_SIM = /* glsl */`
@@ -134,6 +90,11 @@ const FLORES_SHOW = /* glsl */`
   }`;
 
 export function createFX({ kind, host, source }) {
+  if (kind === 'estela') {                                   // red 'estela_' de TODOS.toe, traducida nodo a nodo
+    const audio = new Audio();
+    const fx = createEstela({ host, audio });
+    return { async mic() { await audio.enableMic(); }, dispose() { fx.dispose(); audio.stop(); } };
+  }
   const canvas = document.createElement('canvas');
   const overlay = document.createElement('canvas');      // cajas del blob tracking
   host.append(canvas, overlay);
@@ -158,13 +119,10 @@ export function createFX({ kind, host, source }) {
     targets.forEach((t) => t.dispose()); history.forEach((t) => t.dispose());
     const w = host.clientWidth, h = host.clientHeight;
     renderer.setSize(w, h, false); overlay.width = w; overlay.height = h;
-    const scale = kind === 'entropy' ? 0.5 : 0.6;                     // simulación a menor resolución
+    const scale = 0.6;                                                // simulación a menor resolución
     W = Math.max(64, Math.round(w * scale)); H = Math.max(64, Math.round(h * scale));
     targets = [rt(), rt()];
-    if (kind === 'entropy') {
-      sim = mat(ENTROPY_SIM, { uPrev: { value: null }, uTime: { value: 0 }, uLow: { value: 0 }, uMid: { value: 0 }, uHigh: { value: 0 }, uAspect: { value: w / h }, uMouse: { value: mouse } });
-      show = mat(ENTROPY_SHOW, { uSim: { value: null }, uTime: { value: 0 }, uLow: { value: 0 }, uTexel: { value: new THREE.Vector2(1 / W, 1 / H) } });
-    } else {
+    {
       history = Array.from({ length: 9 }, rt);
       targets.push(rt());
       sim = mat(FLORES_SIM, { uSrc: { value: srcTex }, uPrev: { value: null }, uTexel: { value: new THREE.Vector2(1 / W, 1 / H) }, uTime: { value: 0 }, uLow: { value: 0 }, uMid: { value: 0 } });
@@ -232,14 +190,7 @@ export function createFX({ kind, host, source }) {
     const t = clock.getElapsedTime();
     audio.update(t);
     const [a, b] = targets;
-    if (kind === 'entropy') {
-      sim.uniforms.uPrev.value = a.texture; sim.uniforms.uTime.value = t;
-      sim.uniforms.uLow.value = audio.low; sim.uniforms.uMid.value = audio.mid; sim.uniforms.uHigh.value = audio.high;
-      pass(sim, b);
-      show.uniforms.uSim.value = b.texture; show.uniforms.uLow.value = audio.low;
-      pass(show, null);
-      targets = [b, a];
-    } else {
+    {
       if (srcTex && srcTex.image && srcTex.image.tagName !== 'VIDEO') srcTex.needsUpdate = false;
       sim.uniforms.uPrev.value = a.texture; sim.uniforms.uTime.value = t; sim.uniforms.uLow.value = audio.low; sim.uniforms.uMid.value = audio.mid;
       pass(sim, b);
