@@ -188,11 +188,9 @@ body.case-open { overflow: hidden; }
 
 /* nombres de los proyectos sobre los UMDs */
 .umd-labels { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
-.umd-label { position: absolute; left: 0; top: 0; pointer-events: auto; display: grid; gap: .1rem; justify-items: start; text-align: left; border-left: 1px solid rgba(255,255,255,.25); padding-left: .6rem !important;
-  font-family: var(--f-sans); font-weight: 600; font-size: clamp(.72rem, 1.1vw, .95rem); color: var(--fg); line-height: 1.15;
-  padding: .3rem .55rem; white-space: nowrap; text-shadow: 0 1px 6px #000; transition: opacity .25s, color .2s; opacity: 0; pointer-events: none; }
+.umd-label { position: absolute; left: 0; top: 0; display: grid; gap: .2rem; justify-items: end; text-align: right; border-right: 2px solid var(--red); padding: .3rem .8rem .3rem .4rem;
+  font-family: var(--f-sans); font-weight: 600; font-size: clamp(1rem, 1.7vw, 1.45rem); color: #fff; line-height: 1.1;
+  white-space: nowrap; text-shadow: 0 1px 8px #000; transition: opacity .2s; opacity: 0; pointer-events: none; }
 .umd-label.is-on { opacity: 1; }
-.umd-label small { font-family: var(--f-mono); font-weight: 400; font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--red-soft); }
-.umd-label.is-on { border-left-color: var(--red); }
-.umd-label.is-on small { color: var(--red); }
-@media (max-width: 700px) { .umd-label { font-size: .7rem; } }
+.umd-label small { font-family: var(--f-mono); font-weight: 400; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
+@media (max-width: 700px) { .umd-label { font-size: .9rem; } }
