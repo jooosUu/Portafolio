@@ -185,3 +185,13 @@ body.case-open { overflow: hidden; }
 .case__shot.is-video::after { content: '▶'; position: absolute; right: .6rem; bottom: .5rem; font-size: .8rem; color: #fff; text-shadow: 0 0 6px #000; }
 .case__shot { position: relative; }
 @media (max-width: 700px) { .case__cols { grid-template-columns: 1fr; gap: 0; } .case__inner { padding-top: 7vh; } }
+
+/* efecto de TouchDesigner en vivo dentro de la ficha */
+.case__fx { border: 1px solid #262626; background: #000; }
+.case__fxstage { position: relative; aspect-ratio: 16 / 9; overflow: hidden; }
+.case__fxstage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.case__fxbar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; padding: .7rem .9rem; font-size: .72rem; color: var(--dim); border-top: 1px solid #262626; }
+.case__fxbar span { flex: 1; min-width: 12rem; }
+.case__fxbar button { color: var(--fg); border: 1px solid #333; padding: .35rem .7rem; font: inherit; }
+.case__fxbar button:hover { border-color: var(--red); }
+.case__fxbar button.is-on { color: var(--red); border-color: var(--red); }
