@@ -150,9 +150,13 @@ export function initTitere({ canvas, stage }) {
     // el títere mide ~4.2·s de alto: coronilla en y+1.2·s, pies en y-3.0·s
     if (w > 1100) Object.assign(big, { x: halfW * 0.66, y: 0.55, s: THREE.MathUtils.clamp(w / 1800, 0.62, 0.8) });
     else Object.assign(big, { x: 0, y: 2.15, s: 0.38 });
+    if (w <= 700) {                                                   // celular: arriba a la derecha, sin tapar el nombre
+      const bs = 170 * px / 4.2;
+      Object.assign(big, { x: halfW - 95 * px, y: topY - 60 * px - 1.2 * bs, s: bs });
+    }
     small.s = (w > 700 ? 130 : 96) * px / 4.2;
     small.x = halfW - (w > 700 ? 70 : 44) * px;
-    small.y = -topY + 64 * px + 3.0 * small.s;                   // deja libre la barra de idioma de abajo
+    small.y = -topY + (w > 700 ? 64 : 150) * px + 3.0 * small.s;                   // deja libre la barra de idioma de abajo
   }
   addEventListener('resize', resize);
 
