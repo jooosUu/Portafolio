@@ -70,6 +70,15 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
   const stand = createStand(umds.items.length, STAND_GAP);
   scene.add(stand.group);
   const slotLocalQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.13, 0, 0));   // inclinados hacia atrás en la ranura
+  const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+  const hitZones = umds.items.map((it, i) => {
+    const z = new THREE.Mesh(new THREE.BoxGeometry(UMD_W, UMD_H * 1.8, 0.4), hitMat);
+    z.position.copy(stand.slotPos(i)); z.position.y += UMD_H * 0.9 - 0.5;
+    z.quaternion.copy(slotLocalQ);
+    z.userData.umd = i;
+    stand.group.add(z);
+    return z;
+  });
   const backFlash = new THREE.PointLight(0xffffff, 0, 10, 1.5); scene.add(backFlash);
 
   // nombre de cada proyecto encima de su disco: texto HTML que sigue al disco
@@ -186,7 +195,7 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
       bt.userData.push = bt.parent.worldToLocal(wp.add(inward)).sub(bt.position);
       bt.userData.t = 0;
     }
-    pickables = [...buttons, screen, ...umds.meshes];
+    pickables = [...buttons, screen, ...hitZones];
 
     stage.classList.add('is-ready');
     onState(ui.info());
@@ -201,8 +210,9 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     const r = canvas.getBoundingClientRect();
     ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ndc, camera);
-    const hit = ray.intersectObjects(pickables, false)[0];
-    return hit ? hit.object : null;
+    const hits = ray.intersectObjects(pickables, false);
+    const keep = hits.find((h) => h.object.userData.umd !== undefined && h.object.userData.umd === hovered);
+    return keep ? keep.object : hits[0] ? hits[0].object : null;
   };
   const press = (b) => {
     const bt = buttons.find((o) => o.userData.btn === b);
@@ -369,13 +379,12 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
         it.pivot.scale.setScalar(THREE.MathUtils.lerp(it.pivot.scale.x, it.slotScale, 0.15));
         if (it.pivot.position.distanceTo(it.slot) < H * 0.01) it.state = 'slot';
       } else {
-        // en reposo flota apenas; con el mouse sale RECTO de la ranura y, ya afuera, gira un poco hacia la cámara
+        // en reposo quieto; con el mouse sale RECTO de la ranura y, ya afuera, gira un poco hacia la cámara
         const slotUp = new THREE.Vector3(0, 1, 0).applyQuaternion(it.slotQ);
         const slotForward = new THREE.Vector3(0, 0, 1).applyQuaternion(it.slotQ);
         const out = Math.max(0, (it.hover - 0.55) / 0.45);
-        const bob = Math.sin(t * 1.4 + it.i * 1.1) * H * 0.012 * (1 - it.hover);
         it.pivot.position.copy(it.slot)
-          .addScaledVector(slotUp, Math.min(1, it.hover / 0.55) * H * 0.78 + bob)
+          .addScaledVector(slotUp, Math.min(1, it.hover / 0.55) * H * 0.78)
           .addScaledVector(slotForward, out * H * 0.25);
         it.pivot.quaternion.copy(it.slotQ).slerp(qIdent, out * 0.55);
         it.pivot.scale.setScalar(it.slotScale * (1 + out * 0.08));
@@ -383,12 +392,16 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
       it.body.rotation.set(0, 0, 0);
     }
     const rc = canvas.getBoundingClientRect();
+    let lx = Infinity, ly = 0;
+    umds.items.forEach((it) => {
+      lp.copy(it.slot).project(camera);
+      lx = Math.min(lx, ((lp.x + 1) / 2) * rc.width);
+      ly += ((1 - lp.y) / 2) * rc.height / umds.items.length;
+    });
     umds.items.forEach((it, i) => {
       const b = labels[i], on = hovered === i && (it.state === 'slot' || it.state === 'return');
       b.classList.toggle('is-on', on);
-      if (!on) return;
-      lp.set(UMD_W / 2 + 0.3, UMD_H / 2 - 0.6, 0).applyMatrix4(it.pivot.matrixWorld).project(camera);
-      b.style.transform = `translate(${((lp.x + 1) / 2) * rc.width}px, ${((1 - lp.y) / 2) * rc.height}px) translate(0, -50%)`;
+      if (on) b.style.transform = `translate(${lx - it.slotScale * UMD_W * 0.9 * rc.height / (2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))}px, ${ly}px) translate(-100%, -50%)`;
     });
     ui.draw(t); screenTex.needsUpdate = true;
     crt.uniforms.time.value = t;
