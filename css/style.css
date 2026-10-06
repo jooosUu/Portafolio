@@ -199,3 +199,9 @@ body.case-open { overflow: hidden; }
 .umd-label.is-on { opacity: 1; }
 .umd-label small { font-family: var(--f-mono); font-weight: 400; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
 @media (max-width: 700px) { .umd-label { font-size: .9rem; } }
+
+/* ---------- celular ---------- */
+.umd-labels.is-below .umd-label { justify-items: center; text-align: center; border-right: 0; border-bottom: 2px solid var(--red); padding: .2rem .6rem .35rem; }
+@media (max-width: 700px) {
+  .machine__hint { white-space: normal; width: 88vw; text-align: center; bottom: calc(6vh + 64px); line-height: 1.4; }
+}

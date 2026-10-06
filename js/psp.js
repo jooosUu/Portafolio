@@ -242,19 +242,20 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
   });
   canvas.addEventListener('pointerup', (e) => {
     drag = null;
-    if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && performance.now() - down.t < 450) {
+    const touch = e.pointerType === 'touch';
+    if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < (touch ? 14 : 6) && performance.now() - down.t < (touch ? 700 : 450)) {
       const o = pick(e);
       if (o && o.userData.umd !== undefined) {
-        if (e.pointerType === 'touch' && hovered !== o.userData.umd) hovered = o.userData.umd;   // 1er toque: muestra el nombre
-        else insert(o.userData.umd);
-      } else if (e.pointerType === 'touch') hovered = -1;
+        hovered = -1;
+        insert(o.userData.umd);
+      }
       else if (o && o.userData.btn) { rot.vx = rot.vy = 0; press(o.userData.btn); }
       else if (o) ui.press('cross');                 // tocar la pantalla = ✕
     }
     down = null;
   });
   canvas.addEventListener('pointercancel', () => { drag = down = null; });
-  canvas.addEventListener('pointerleave', () => { hovered = -1; });
+  canvas.addEventListener('pointerleave', (e) => { if (e.pointerType !== 'touch') hovered = -1; });
 
   /* ---------- insertar un UMD: la PSP se voltea, el disco entra por atrás y arranca el proyecto ---------- */
   let hovered = -1, seq = null, inserted = -1;
@@ -317,7 +318,8 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    const k = modelW * 0.22 / UMD_W;                              // escala del stand y sus discos
+    const narrow = w / h < 0.8;                                    // celular en vertical
+    const k = modelW * (narrow ? 0.2 : 0.22) / UMD_W;             // escala del stand y sus discos
     stand.group.scale.setScalar(k);
     const TILT = 0.32, TURN = -0.95;                               // visto un poco desde arriba y de lado
     const pspH = modelW * 0.5, gap = modelW * 0.2;               // aire entre la PSP y el stand para que el disco suba sin taparla
@@ -330,7 +332,7 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     const top = stackH / 2 - vh * 0.02;
     baseY = top - pspH / 2;
     stand.group.rotation.set(TILT, TURN, 0);
-    stand.group.position.set(-modelW * 0.08, top - pspH - gap - (stand.top + UMD_H - 0.5) * k, stand.depth * k * 0.35);
+    stand.group.position.set(-modelW * (narrow ? 0.2 : 0.08), top - pspH - gap - (stand.top + UMD_H - 0.5) * k, stand.depth * k * 0.35);
     stand.group.updateMatrixWorld(true);
     umds.items.forEach((it, i) => {
       const pos = stand.slotPos(i).clone();
@@ -392,16 +394,24 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
       it.body.rotation.set(0, 0, 0);
     }
     const rc = canvas.getBoundingClientRect();
-    let lx = Infinity, ly = 0;
+    let lx = Infinity, rx = -Infinity, ly = 0, by = -Infinity;
     umds.items.forEach((it) => {
       lp.copy(it.slot).project(camera);
-      lx = Math.min(lx, ((lp.x + 1) / 2) * rc.width);
-      ly += ((1 - lp.y) / 2) * rc.height / umds.items.length;
+      const x = ((lp.x + 1) / 2) * rc.width, y = ((1 - lp.y) / 2) * rc.height;
+      lx = Math.min(lx, x); rx = Math.max(rx, x); by = Math.max(by, y);
+      ly += y / umds.items.length;
     });
+    const px = rc.height / (2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
+    const halfDisc = umds.items[0].slotScale * UMD_W * 0.5 * px;
+    const below = rc.width < 700;
+    labelBox.classList.toggle('is-below', below);
     umds.items.forEach((it, i) => {
       const b = labels[i], on = hovered === i && (it.state === 'slot' || it.state === 'return');
       b.classList.toggle('is-on', on);
-      if (on) b.style.transform = `translate(${lx - it.slotScale * UMD_W * 0.9 * rc.height / (2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))}px, ${ly}px) translate(-100%, -50%)`;
+      if (!on) return;
+      b.style.transform = below
+        ? `translate(${(lx + rx) / 2}px, ${by + halfDisc * 1.6}px) translate(-50%, 0)`
+        : `translate(${lx - halfDisc * 1.8}px, ${ly}px) translate(-100%, -50%)`;
     });
     ui.draw(t); screenTex.needsUpdate = true;
     crt.uniforms.time.value = t;
