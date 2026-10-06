@@ -61,10 +61,10 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
   const spin = new THREE.Group();          // giro del usuario + flotación
   scene.add(spin);
 
-  // discos UMD (uno por proyecto) en fila debajo de la PSP
+  // discos UMD (uno por proyecto) en stand
   const umds = createUMDs();
   scene.add(umds.group);
-  const STAND_GAP = 1.55;
+  const STAND_GAP = 2.4;
   const stand = createStand(umds.items.length, STAND_GAP);
   scene.add(stand.group);
   const slotLocalQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.13, 0, 0));   // inclinados hacia atrás en la ranura
@@ -230,7 +230,9 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     if (inserted >= 0) {                       // el disco anterior vuelve a su lugar
       const old = umds.items[inserted];
       old.state = 'return'; old.pivot.visible = true;
-      old.pivot.position.copy(old.slot).add(new THREE.Vector3(0, old.slotScale * UMD_H * 0.35, 0));
+      const up = new THREE.Vector3(0, 1, 0).applyQuaternion(old.slotQ);
+      old.pivot.position.copy(old.slot).addScaledVector(up, old.slotScale * UMD_H * 0.45);
+      old.pivot.quaternion.copy(old.slotQ);
     }
     it.state = 'flying';
     const t = clock.getElapsedTime();
@@ -357,13 +359,14 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
         it.pivot.quaternion.slerp(it.slotQ, 0.15);
         it.pivot.scale.setScalar(THREE.MathUtils.lerp(it.pivot.scale.x, it.slotScale, 0.15));
         if (it.pivot.position.distanceTo(it.slot) < H * 0.01) it.state = 'slot';
-      } else {
-        // sale de la ranura hacia arriba y hacia adelante sin chocar con la PSP
-        it.pivot.position.copy(it.slot);
-        it.pivot.position.y += it.hover * H * 0.22;
-        it.pivot.position.z += it.hover * H * 0.45;
-        it.pivot.quaternion.copy(it.slotQ).slerp(qIdent, it.hover * 0.85);
-        it.pivot.scale.setScalar(it.slotScale * (1 + it.hover * 0.08));
+        // sale de la ranura hacia arriba a lo largo de su eje y se adelanta perpendicularmente sin rotar sobre los vecinos
+        const slotUp = new THREE.Vector3(0, 1, 0).applyQuaternion(it.slotQ);
+        const slotForward = new THREE.Vector3(0, 0, 1).applyQuaternion(it.slotQ);
+        it.pivot.position.copy(it.slot)
+          .addScaledVector(slotUp, it.hover * H * 0.42)
+          .addScaledVector(slotForward, it.hover * H * 0.20);
+        it.pivot.quaternion.copy(it.slotQ);
+        it.pivot.scale.setScalar(it.slotScale * (1 + it.hover * 0.05));
       }
       it.body.rotation.set(0, 0, 0);
     }
