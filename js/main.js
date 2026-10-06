@@ -89,7 +89,7 @@ const psp = initPSP({
     else if (type === 'invert') toggleInvert();
   },
 });
-onLang(() => paintRail(psp.info()));
+onLang(() => { paintRail(psp.info()); psp.relabel(); });
 
 railOpen.addEventListener('click', () => railProj >= 0 && openCase(railProj));
 document.querySelectorAll('[data-btn]').forEach((b) => b.addEventListener('click', () => psp.press(b.dataset.btn)));
