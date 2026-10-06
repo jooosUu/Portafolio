@@ -315,8 +315,6 @@ export class ScreenUI {
     ctx.fillText('josÚ', 30, 130);
     ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.font = '22px "Space Grotesk", sans-serif';
     this.wrap(t('bio1'), 32, 180, W * 0.58, 30, 7);
-    ctx.fillStyle = 'rgba(255,255,255,.6)';
-    this.wrap(t('bio2'), 32, 410, W * 0.58, 30, 3);
     this.hint(getLang() === 'es' ? '○ volver' : '○ back');
   }
 

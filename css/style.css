@@ -107,12 +107,17 @@ body::before {
 .machine__hint { position: absolute; left: 50%; bottom: 2.5vh; transform: translateX(-50%); z-index: 3; color: var(--dim); font-size: .78rem; white-space: nowrap; }
 
 /* ---------- about ---------- */
-.about { display: grid; align-content: center; gap: 3rem; padding: 14vh 8vw; }
+.about { display: grid; align-content: center; gap: 3rem; padding: 14vh 8vw 6vh; min-height: auto; }
 .about__h { font-family: var(--f-title); font-weight: 900; font-size: clamp(4rem, 13vw, 11rem); line-height: .9; }
 .about__bio { max-width: 46rem; margin-left: auto; font-size: clamp(1.05rem, 1.6vw, 1.35rem); line-height: 1.55; display: grid; gap: 1.2rem; transition-delay: .15s; }
 
 /* ---------- contacto ---------- */
-.contact { display: grid; align-content: center; justify-items: center; gap: 2.5rem; padding: 14vh 6vw 20vh; text-align: center; }
+.contact { display: grid; align-content: center; justify-items: center; gap: 2.5rem; padding: 6vh 6vw 20vh; text-align: center; min-height: 80svh; }
+.credits__more { opacity: .45; font-size: .62rem; margin-right: auto; }
+.credits { justify-content: flex-start !important; }
+.credits__more summary { cursor: pointer; list-style: none; }
+.credits__more summary::-webkit-details-marker { display: none; }
+.credits__more[open] { opacity: .8; }
 .contact__h { font-family: var(--f-title); font-weight: 900; font-size: clamp(4.5rem, 17vw, 15rem); line-height: .85; }
 .contact__h em { font-style: normal; color: var(--red); }
 .contact__links { list-style: none; display: grid; gap: .6rem; font-size: clamp(.95rem, 1.8vw, 1.3rem); transition-delay: .15s; }
