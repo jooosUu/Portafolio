@@ -61,10 +61,10 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
   const spin = new THREE.Group();          // giro del usuario + flotación
   scene.add(spin);
 
-  // discos UMD (uno por proyecto) en stand
+  // discos UMD (uno por proyecto) en stand horizontal
   const umds = createUMDs();
   scene.add(umds.group);
-  const STAND_GAP = 2.4;
+  const STAND_GAP = 7.6;
   const stand = createStand(umds.items.length, STAND_GAP);
   scene.add(stand.group);
   const slotLocalQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.13, 0, 0));   // inclinados hacia atrás en la ranura
@@ -282,44 +282,38 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    const isWide = camera.aspect >= 1.15;
-    const k = modelW * 0.32 / UMD_W;                              // escala del stand y sus discos
+    const k = Math.min(modelW * 0.26 / UMD_W, 0.62);
     stand.group.scale.setScalar(k);
 
-    if (isWide) {
-      // Stand al lado derecho de la PSP: distribución horizontal de escritorio
-      baseX = -modelW * 0.22;
-      baseY = 0.2;
-      const standX = modelW * 0.38;
-      const standY = baseY - 2.0;
-      stand.group.rotation.set(0.18, -0.72, 0);
-      stand.group.position.set(standX, standY, 1.2);
+    const pspH = modelW * 0.5;
+    const standW = stand.width * k;
+    const gap = modelW * 0.16;
+    const standH = (stand.top + UMD_H - 0.5) * k;
+    const stackH = pspH + gap + standH;
 
-      const totalW = modelW * 1.6;
-      const totalH = modelW * 0.72;
-      camera.position.z = Math.max(totalW / (0.86 * 2 * tan * camera.aspect), totalH / (0.76 * 2 * tan), 26);
-    } else {
-      // Pantallas angostas / móvil: stand debajo con suficiente separación
-      baseX = 0;
-      const pspH = modelW * 0.5, gap = modelW * 0.22;
-      const standH = (stand.top + UMD_H - 0.5) * k;
-      const stackH = pspH + gap + standH;
-      camera.position.z = Math.max(modelW / (0.9 * 2 * tan * camera.aspect), stackH / (0.76 * 2 * tan));
-      camera.updateProjectionMatrix();
-      const vh = 2 * camera.position.z * tan;
-      const top = stackH / 2 - vh * 0.04;
-      baseY = top - pspH / 2;
-      stand.group.rotation.set(0.1, -0.85, 0);
-      stand.group.position.set(0, top - pspH - gap - standH, 0);
-    }
-
+    baseX = 0;
+    camera.position.z = Math.max(Math.max(modelW, standW) / (0.86 * 2 * tan * camera.aspect), stackH / (0.76 * 2 * tan));
     camera.updateProjectionMatrix();
+
+    const vh = 2 * camera.position.z * tan;
+    const top = stackH / 2 - vh * 0.03;
+    baseY = top - pspH / 2;
+
+    stand.group.rotation.set(0.12, 0, 0); // exhibidor frontal elegante y nivelado
+    stand.group.position.set(0, top - pspH - gap - standH, 0);
     stand.group.updateMatrixWorld(true);
+
     umds.items.forEach((it, i) => {
-      it.slot.set(0, stand.top + UMD_H / 2 - 0.5, stand.slotZ(i)).applyMatrix4(stand.group.matrixWorld);
+      const pos = stand.slotPos(i).clone();
+      pos.y += UMD_H / 2 - 0.5;
+      it.slot.copy(pos).applyMatrix4(stand.group.matrixWorld);
       it.slotQ.copy(stand.group.quaternion).multiply(slotLocalQ);
       it.slotScale = k;
-      if (it.state === 'slot') { it.pivot.position.copy(it.slot); it.pivot.quaternion.copy(it.slotQ); it.pivot.scale.setScalar(k); }
+      if (it.state === 'slot') {
+        it.pivot.position.copy(it.slot);
+        it.pivot.quaternion.copy(it.slotQ);
+        it.pivot.scale.setScalar(k);
+      }
     });
   };
   new ResizeObserver(resize).observe(stage); resize();

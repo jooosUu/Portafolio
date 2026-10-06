@@ -110,22 +110,35 @@ function drawDisc(ctx, p, img) {
   ctx.restore();
 }
 
-/* stand: base negra con frente inclinado, ranuras y josÚ en rojo */
+/* stand: exhibidor horizontal con ranuras lado a lado y josÚ en rojo al frente */
 export function createStand(n, gap) {
-  const L = 1.4 + n * gap + 0.6, Hh = 1.0, Wd = UMD_W + 0.9;
+  const Wd = (n - 1) * gap + UMD_W + 2.0, D_stand = 3.6, Hh = 0.95;
+  const D2 = D_stand / 2;
   const prof = new THREE.Shape();
-  prof.moveTo(0, 0); prof.lineTo(L, 0); prof.lineTo(L, Hh); prof.lineTo(1.1, Hh); prof.lineTo(0, 0.35); prof.closePath();
+  prof.moveTo(-D2, 0);
+  prof.lineTo(D2, 0);
+  prof.lineTo(D2, 0.32);
+  prof.lineTo(D2 - 0.95, Hh);
+  prof.lineTo(-D2, Hh);
+  prof.closePath();
+
   const geo = new THREE.ExtrudeGeometry(prof, { depth: Wd, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 2 });
-  geo.rotateY(Math.PI / 2); geo.translate(-Wd / 2, 0, 0);       // largo del stand hacia -Z (de frente hacia atrás)
+  geo.rotateY(Math.PI / 2);
+  geo.translate(-Wd / 2, 0, 0);       // stand centrado horizontalmente a lo largo de X
+
   const base = new THREE.Mesh(geo, new THREE.MeshPhysicalMaterial({ color: 0x0c0c0e, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.3 }));
   const g = new THREE.Group(); g.add(base);
-  // ranuras
+
+  // ranuras horizontales: una por proyecto, separadas y sin solapamiento
   const slotMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
   for (let i = 0; i < n; i++) {
-    const s = new THREE.Mesh(new THREE.PlaneGeometry(UMD_W + 0.2, D + 0.12), slotMat);
-    s.rotation.x = -Math.PI / 2; s.position.set(0, Hh + 0.006, -(1.6 + i * gap));
+    const posX = -((n - 1) * gap) / 2 + i * gap;
+    const s = new THREE.Mesh(new THREE.PlaneGeometry(UMD_W + 0.15, D + 0.12), slotMat);
+    s.rotation.x = -Math.PI / 2;
+    s.position.set(posX, Hh + 0.005, -0.45);
     g.add(s);
   }
+
   // josÚ en el frente inclinado
   const c = document.createElement('canvas'); c.width = 1024; c.height = 220;
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
@@ -137,12 +150,19 @@ export function createStand(n, gap) {
     tex.needsUpdate = true;
   };
   draw(); document.fonts.ready.then(draw);
-  const slope = Math.hypot(1.1, Hh - 0.35);
-  const label = new THREE.Mesh(new THREE.PlaneGeometry(Wd * 0.75, slope * 0.95), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
-  label.position.set(0, (Hh + 0.35) / 2 + 0.02, -0.55 + 0.012);
-  label.rotation.x = -Math.atan2(1.1, Hh - 0.35);
+
+  const slope = Math.hypot(0.95, Hh - 0.32);
+  const label = new THREE.Mesh(new THREE.PlaneGeometry(Math.min(Wd * 0.5, 14), slope * 0.9), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
+  label.position.set(0, (Hh + 0.32) / 2 + 0.015, D2 - 0.475 + 0.012);
+  label.rotation.x = Math.atan2(0.95, Hh - 0.32);
   g.add(label);
-  return { group: g, top: Hh, slotZ: (i) => -(1.6 + i * gap) };
+
+  return {
+    group: g,
+    top: Hh,
+    width: Wd,
+    slotPos: (i) => new THREE.Vector3(-((n - 1) * gap) / 2 + i * gap, Hh, -0.45),
+  };
 }
 
 export function createUMDs() {
