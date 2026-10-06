@@ -141,6 +141,7 @@ export function initTitere({ canvas, stage }) {
   const big = { x: 0, y: 0, s: 1 }, small = { x: 0, y: 0, s: 0.3 };
   function resize() {
     const w = document.documentElement.clientWidth, h = innerHeight;   // sin la barra de scroll
+    if (!w || !h) return;                                            // ventana sin tamaño (cargando): evita NaN
     renderer.setSize(w, h, false);
     camera.aspect = w / h; camera.updateProjectionMatrix();
     const vh = 2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
