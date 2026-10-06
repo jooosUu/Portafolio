@@ -274,25 +274,44 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
   }
 
   /* ---------- tamaño y visibilidad ---------- */
-  let modelW = 17, modelD = 0, baseY = 0;
+  let modelW = 17, modelD = 0, baseX = 0, baseY = 0;
   const resize = () => {
     const w = stage.clientWidth, h = stage.clientHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    // PSP arriba y la fila de UMDs debajo; la cámara se aleja lo justo para que quepan las dos cosas
     const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    const pspH = modelW * 0.5, gap = modelW * 0.22;
-    const k = modelW * 0.3 / UMD_W;                              // escala del stand y sus discos
-    const standH = (stand.top + UMD_H - 0.5) * k;
-    const stackH = pspH + gap + standH;
-    camera.position.z = Math.max(modelW / (0.9 * 2 * tan * camera.aspect), stackH / (0.76 * 2 * tan));
-    camera.updateProjectionMatrix();
-    const vh = 2 * camera.position.z * tan;
-    const top = stackH / 2 - vh * 0.04;
-    baseY = top - pspH / 2;
+    const isWide = camera.aspect >= 1.15;
+    const k = modelW * 0.32 / UMD_W;                              // escala del stand y sus discos
     stand.group.scale.setScalar(k);
-    stand.group.rotation.set(0.1, -0.85, 0);          // 3/4: los discos se ven en abanico
-    stand.group.position.set(0, top - pspH - gap - standH, 0);
+
+    if (isWide) {
+      // Stand al lado derecho de la PSP: distribución horizontal de escritorio
+      baseX = -modelW * 0.22;
+      baseY = 0.2;
+      const standX = modelW * 0.38;
+      const standY = baseY - 2.0;
+      stand.group.rotation.set(0.18, -0.72, 0);
+      stand.group.position.set(standX, standY, 1.2);
+
+      const totalW = modelW * 1.6;
+      const totalH = modelW * 0.72;
+      camera.position.z = Math.max(totalW / (0.86 * 2 * tan * camera.aspect), totalH / (0.76 * 2 * tan), 26);
+    } else {
+      // Pantallas angostas / móvil: stand debajo con suficiente separación
+      baseX = 0;
+      const pspH = modelW * 0.5, gap = modelW * 0.22;
+      const standH = (stand.top + UMD_H - 0.5) * k;
+      const stackH = pspH + gap + standH;
+      camera.position.z = Math.max(modelW / (0.9 * 2 * tan * camera.aspect), stackH / (0.76 * 2 * tan));
+      camera.updateProjectionMatrix();
+      const vh = 2 * camera.position.z * tan;
+      const top = stackH / 2 - vh * 0.04;
+      baseY = top - pspH / 2;
+      stand.group.rotation.set(0.1, -0.85, 0);
+      stand.group.position.set(0, top - pspH - gap - standH, 0);
+    }
+
+    camera.updateProjectionMatrix();
     stand.group.updateMatrixWorld(true);
     umds.items.forEach((it, i) => {
       it.slot.set(0, stand.top + UMD_H / 2 - 0.5, stand.slotZ(i)).applyMatrix4(stand.group.matrixWorld);
@@ -321,7 +340,7 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
       }
     }
     spin.rotation.set(rot.x + Math.sin(t * 0.7) * 0.06, rot.y + Math.sin(t * 0.5) * 0.12, Math.sin(t * 0.6) * 0.03);
-    spin.position.y = baseY + Math.sin(t * 0.9) * 0.25;
+    spin.position.set(baseX, baseY + Math.sin(t * 0.9) * 0.25, 0);
     // discos en la fila: flotan, se levantan con el mouse y el disco gira por dentro
     const dt = 1 / 60;
     for (const it of umds.items) {
