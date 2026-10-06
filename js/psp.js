@@ -5,6 +5,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { ScreenUI } from './screen.js';
+import { PROJECTS, CATS } from './data.js';
+import { getLang } from './i18n.js';
 import { createUMDs, createStand, UMD_W, UMD_H } from './umd.js';
 
 const CRT_VERT = /* glsl */`
@@ -69,6 +71,26 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
   scene.add(stand.group);
   const slotLocalQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.13, 0, 0));   // inclinados hacia atrás en la ranura
   const backFlash = new THREE.PointLight(0xffffff, 0, 10, 1.5); scene.add(backFlash);
+
+  // nombre de cada proyecto encima de su disco: texto HTML que sigue al disco
+  const labelBox = document.createElement('div');
+  labelBox.className = 'umd-labels';
+  stage.appendChild(labelBox);
+  const labels = umds.items.map((it) => {
+    const b = document.createElement('button');
+    b.className = 'umd-label';
+    b.addEventListener('pointerenter', () => { hovered = it.i; });
+    b.addEventListener('pointerleave', () => { if (hovered === it.i) hovered = -1; });
+    b.addEventListener('click', () => insert(it.i));
+    labelBox.appendChild(b);
+    return b;
+  });
+  const paintLabels = () => labels.forEach((b, i) => {
+    const p = PROJECTS[i], lang = getLang();
+    b.innerHTML = `<small>${p.locked ? '🔒 ' : ''}${CATS[p.cat][lang]}</small>${p.title[lang]}`;
+  });
+  paintLabels();
+  const lp = new THREE.Vector3();
 
   const rim = new THREE.DirectionalLight(0xb9c8ff, 2.2); rim.position.set(8, 6, -6); scene.add(rim);
   const key = new THREE.DirectionalLight(0xffffff, 1.2); key.position.set(-6, 8, 10); scene.add(key);
@@ -353,17 +375,29 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
         it.pivot.quaternion.slerp(it.slotQ, 0.15);
         it.pivot.scale.setScalar(THREE.MathUtils.lerp(it.pivot.scale.x, it.slotScale, 0.15));
         if (it.pivot.position.distanceTo(it.slot) < H * 0.01) it.state = 'slot';
-        // sale de la ranura hacia arriba a lo largo de su eje y se adelanta perpendicularmente sin rotar sobre los vecinos
+      } else {
+        // en reposo flota apenas; con el mouse sale de la ranura, se adelanta y gira de frente a la cámara
         const slotUp = new THREE.Vector3(0, 1, 0).applyQuaternion(it.slotQ);
         const slotForward = new THREE.Vector3(0, 0, 1).applyQuaternion(it.slotQ);
+        const bob = Math.sin(t * 1.4 + it.i * 1.1) * H * 0.015 * (1 - it.hover);
         it.pivot.position.copy(it.slot)
-          .addScaledVector(slotUp, it.hover * H * 0.42)
-          .addScaledVector(slotForward, it.hover * H * 0.20);
-        it.pivot.quaternion.copy(it.slotQ);
-        it.pivot.scale.setScalar(it.slotScale * (1 + it.hover * 0.05));
+          .addScaledVector(slotUp, it.hover * H * 0.42 + bob)
+          .addScaledVector(slotForward, it.hover * H * 0.35);
+        it.pivot.quaternion.copy(it.slotQ).slerp(qIdent, it.hover * 0.6);
+        it.pivot.scale.setScalar(it.slotScale * (1 + it.hover * 0.1));
       }
       it.body.rotation.set(0, 0, 0);
     }
+    const rc = canvas.getBoundingClientRect();
+    umds.items.forEach((it, i) => {
+      const b = labels[i];
+      const show = it.state === 'slot' || it.state === 'return';
+      b.style.opacity = show ? 1 : 0;
+      if (!show) return;
+      lp.set(0, UMD_H / 2 + 0.55, 0).applyMatrix4(it.pivot.matrixWorld).project(camera);
+      b.style.transform = `translate(${((lp.x + 1) / 2) * rc.width}px, ${((1 - lp.y) / 2) * rc.height}px) translate(-50%, -100%)`;
+      b.classList.toggle('is-hover', hovered === i);
+    });
     ui.draw(t); screenTex.needsUpdate = true;
     crt.uniforms.time.value = t;
     screenLight.color.lerp(glow.set(ui.info().glow), 0.08);
@@ -376,5 +410,5 @@ export function initPSP({ canvas, stage, onProgress = () => {}, onReady = () => 
     renderer.render(scene, camera);
   });
 
-  return { press, info: () => ui.info(), relabel: umds.relabel, insert, open: (k) => { ui.openGallery(k, false); onState(ui.info()); } };
+  return { press, info: () => ui.info(), relabel: () => { umds.relabel(); paintLabels(); }, insert, open: (k) => { ui.openGallery(k, false); onState(ui.info()); } };
 }
