@@ -1,3 +1,7 @@
 # sitio original de referencia (sin licencia): solo para consulta local, no se publica
 _ref/
 *.zip
+
+# herramientas locales (scripts, fuentes de tarjeta y documentos): no se publican
+_herramientas/
+.claude/

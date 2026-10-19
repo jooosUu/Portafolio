@@ -60,7 +60,7 @@ body::before {
 .is-in [data-rise]:nth-child(n+5) { transition-delay: .15s; }
 
 /* sigilos decorativos */
-.sigil { position: absolute; pointer-events: none; opacity: .9; animation: drift 38s linear infinite; }
+.sigil { position: absolute; pointer-events: none; opacity: .9; }
 .sigil svg { width: 100%; height: 100%; fill: var(--fg); filter: drop-shadow(0 0 6px rgba(255, 255, 255, .25)); }
 @keyframes drift { to { transform: rotate(360deg); } }
 .sigil--a { width: min(46vw, 520px); aspect-ratio: 1; left: -9vw; top: 6vh; animation-duration: 70s; opacity: .55; }
