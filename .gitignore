@@ -4,3 +4,4 @@ _ref/
 
 # herramientas locales (scripts, fuentes de tarjeta y documentos): no se publican
 _herramientas/
+.claude/

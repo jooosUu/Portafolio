@@ -32,7 +32,7 @@ export const PROJECTS = [
            'Floating music player while you walk the hall.'],
     },
     images: imgs('museo', 8),
-    title: { es: 'Museo Autista VR', en: 'Autistic Museum VR' },
+    title: { es: 'Museo Hiperfoco VR', en: 'Hyperfocus Museum VR' },
     desc:  { es: 'Museo de intereses especiales en VR (Unity + Cardboard): aviones, dinosaurios, hongos y carros, con misión y tutorial.',
              en: 'Special-interests museum in VR (Unity + Cardboard): jets, dinosaurs, mushrooms and cars, with a mission and tutorial.' },
   },

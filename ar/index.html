@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#070707">
+<title>josÚ · tarjeta AR</title>
+<meta name="description" content="Apunta a la tarjeta de Jose Plazas (josÚ) y sale Paleto bailando.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@900&family=Space+Grotesk:wght@400;600&family=Space+Mono:wght@400;700&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+    "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
+  }
+}
+</script>
+</head>
+<body>
+  <div id="ar"></div>
+
+  <section id="inicio" class="pantalla oculto">
+    <header>
+      <p class="mono gris">/ tarjeta · realidad aumentada</p>
+      <h1 class="logo">jos<b>Ú</b></h1>
+    </header>
+    <figure class="muestra">
+      <img src="tarjeta.jpg" alt="Reverso de la tarjeta de Jose Plazas">
+      <figcaption class="mono">apunta a esta cara de la tarjeta</figcaption>
+    </figure>
+    <footer>
+      <button id="btn-iniciar" class="boton">Activar cámara</button>
+      <p class="mono gris">sube el volumen ↗</p>
+    </footer>
+  </section>
+
+  <section id="cargando" class="pantalla">
+    <p class="titular">Abriendo la cámara</p>
+    <div class="barra"><i></i></div>
+  </section>
+
+  <div id="escaneo" class="oculto">
+    <div class="visor"><i></i><i></i><i></i><i></i></div>
+    <p class="mono aviso">apunta a la cara del QR de la tarjeta</p>
+    <a class="mono saltar" href="https://jooosuu.github.io/Portafolio/">ir directo al portafolio ↗</a>
+  </div>
+
+  <nav id="enlaces" class="oculto">
+    <p class="mono gris">Jose Plazas · ingeniero multimedia</p>
+    <a class="principal" href="https://jooosuu.github.io/Portafolio/">ver portafolio ↗</a>
+    <div class="fila">
+      <a href="https://www.behance.net/juanjoplazas" target="_blank" rel="noopener">behance ↗</a>
+      <a href="https://www.instagram.com/badfacejosu/" target="_blank" rel="noopener">instagram ↗</a>
+      <a href="mailto:juanjoploc@gmail.com">correo ✉</a>
+    </div>
+    <p class="mono pista">toca a Paleto · toca la pantalla para el sonido</p>
+  </nav>
+
+  <section id="error" class="pantalla oculto">
+    <p class="titular">No pude abrir la cámara</p>
+    <p id="error-msg" class="mono gris"></p>
+    <footer>
+      <button class="boton" onclick="location.reload()">Reintentar</button>
+      <a class="mono saltar" href="https://jooosuu.github.io/Portafolio/">ir al portafolio ↗</a>
+    </footer>
+  </section>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

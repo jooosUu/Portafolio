@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Compilar marcador · tarjeta josÚ</title>
+<body style="font-family:monospace;background:#070707;color:#F2F2F2;padding:20px">
+<pre id="log">compilando…</pre>
+<script type="module">
+import { Compiler } from "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js";
+const log = (m) => (document.getElementById('log').textContent += '\n' + m);
+const img = new Image(); img.src = 'tarjeta.jpg'; await img.decode();
+const c = new Compiler(); let u = -10;
+await c.compileImageTargets([img], (p) => { if (p - u >= 10) { u = p; log(p.toFixed(0) + '%'); } });
+const r = await fetch('/guardar-mind', { method: 'POST', body: c.exportData() });
+log('LISTO ' + await r.text()); window.listo = true;
+</script>
